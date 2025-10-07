@@ -1,0 +1,1 @@
+//Gộp các route từ tất cả feature
