@@ -31,10 +31,10 @@ temp/
 .DS_Store
 Thumbs.db
 
-# DB
-*.sql
-*.sqlite
-*.db
+# # DB
+# *.sql
+# *.sqlite
+# *.db
 
 # Uploads
 uploads/

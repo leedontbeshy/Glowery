@@ -1,11 +1,11 @@
-# 🧩 Quy tắc Commit (Conventional Commits)
+# Quy tắc Commit (Conventional Commits)
 
 Tài liệu này quy định chuẩn commit message cho toàn dự án.
 Tuân theo [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ---
 
-## 🧱 Cấu trúc chung
+##  Cấu trúc chung
 
 ```
 <type>(<scope>): <short summary>
@@ -15,7 +15,7 @@ Tuân theo [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 [optional footer]
 ```
 
-### 🔍 Giải thích
+###  Giải thích
 
 | Thành phần | Mô tả |
 | :--- | :--- |
@@ -45,7 +45,7 @@ Tuân theo [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 
 ---
 
-## 📌 Quy tắc viết Summary
+##  Quy tắc viết Summary
 
 *   Viết **ở thì hiện tại** → `add`, `fix`, `update` chứ **không** phải `added`, `fixed`, `updated`.
 *   Không viết hoa chữ cái đầu tiên.
@@ -114,7 +114,7 @@ feat(core): setup TypeScript and database structure
 
 ---
 
-## 💣 Breaking Change
+##  Breaking Change
 
 Nếu thay đổi làm **phá vỡ tương thích ngược**, hãy thêm `BREAKING CHANGE:` vào phần `footer`:
 
