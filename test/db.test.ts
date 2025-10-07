@@ -1,4 +1,4 @@
-import { pool } from "../config/database";
+import { pool } from "../src/config/database";
 
 async function testDB() {
   console.log("Checking database connection...");
