@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from "./enums";
+import { UserRole, UserStatus } from "../../common/constants/user.enums";
 
 export interface User{
     id: string;
