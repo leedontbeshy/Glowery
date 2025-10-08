@@ -1,16 +1,16 @@
 import {pool} from "@/config/database";
 import { User } from "./user.model";
-import { registerInput } from "./user.schema";
+import { RegisterInput } from "./user.schema";
 
 export class UserRepository {
   static async findUserByEmail(email: string) {
-    const result = await pool.query("SELECT id, email, full_name, phone, created_at FROM users WHERE email = $1",
+    const result = await pool.query("SELECT id, email, password, full_name, phone, created_at FROM users WHERE email = $1",
       [email],
     );
     return result.rows[0] || null;
   }
 
-  static async create(data: registerInput): Promise<User> {
+  static async create(data: RegisterInput): Promise<User> {
     const result = await pool.query(
       `INSERT INTO users (email, password, full_name, phone)
             VALUES ($1, $2, $3, $4)
