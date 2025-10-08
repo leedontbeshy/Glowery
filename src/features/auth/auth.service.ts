@@ -1,17 +1,17 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
 import { signToken, verifyToken } from '@/common/utils/jwt';
-import { registerSchema, loginSchema, registerInput, loginInput } from '@/core/user/user.schema';
+import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/user/user.schema';
 import { UserRepository } from '@/core/user/user.repository';
 
 export class AuthService{
 
-    static async register(data: registerInput){
+    static async register(data: RegisterInput){
         const parsed = registerSchema.safeParse(data);
         if(!parsed.success){
             throw new Error(parsed.error.issues[0].message)
         }
 
-        const {email, password, full_name, phone} = parsed.data;
+        const {email, password,confirm_password, full_name, phone} = parsed.data;
         
         const existing = await UserRepository.findUserByEmail(email);
         if(existing){
@@ -23,6 +23,7 @@ export class AuthService{
         const user = await UserRepository.create({
             email,
             password: hashedPassword,
+            confirm_password,
             full_name,
             phone
         })
@@ -30,7 +31,7 @@ export class AuthService{
         return user;
     }
 
-    static async login(data: loginInput){
+    static async login(data: LoginInput){
         //Validate input
         const parsed = loginSchema.safeParse(data);
         if(!parsed.success){
