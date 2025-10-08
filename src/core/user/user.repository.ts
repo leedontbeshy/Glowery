@@ -1,6 +1,6 @@
 import {pool} from "@/config/database";
 import { User } from "./user.model";
-import { RegisterInput } from "./user.schema";
+import { CreateUserInput, createUserInput } from "./user.schema";
 
 export class UserRepository {
   static async findUserByEmail(email: string) {
@@ -10,7 +10,7 @@ export class UserRepository {
     return result.rows[0] || null;
   }
 
-  static async create(data: RegisterInput): Promise<User> {
+  static async create(data: CreateUserInput): Promise<User> {
     const result = await pool.query(
       `INSERT INTO users (email, password, full_name, phone)
             VALUES ($1, $2, $3, $4)
