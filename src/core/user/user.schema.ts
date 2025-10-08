@@ -24,6 +24,19 @@ export const registerSchema = z
   })
   .strict();
 
+export const createUserInput = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email("Invalid email format"),
+    password: basePasswordSchema,
+    full_name: baseNameSchema,
+    phone: basePhoneSchema.optional(),
+  })
+  .strict();
+
 export const loginSchema = z
   .object({
     email: z
@@ -80,6 +93,7 @@ export const verifyEmailSchema = z
   .strict();
 
 // Types
+export type CreateUserInput = z.infer<typeof createUserInput>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ResetPasswordRequestInput = z.infer<typeof resetPasswordRequestSchema>;

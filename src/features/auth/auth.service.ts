@@ -11,19 +11,18 @@ export class AuthService{
             throw new Error(parsed.error.issues[0].message)
         }
 
-        const {email, password,confirm_password, full_name, phone} = parsed.data;
+        const {email, password, full_name, phone} = parsed.data;
         
         const existing = await UserRepository.findUserByEmail(email);
         if(existing){
             throw new Error("Email already exists")
         }
-
+        
         const hashedPassword = await hashPassword(password);
 
         const user = await UserRepository.create({
             email,
             password: hashedPassword,
-            confirm_password,
             full_name,
             phone
         })
