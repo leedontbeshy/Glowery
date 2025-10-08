@@ -1,7 +1,7 @@
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
-import { registerSchema, loginSchema, registerInput, loginInput } from '../users/user.schema';
-import { UserRepository } from '../users/user.repository';
+import { registerSchema, loginSchema, registerInput, loginInput } from '@/core/user/user.schema';
+import { UserRepository } from '@/core/user/user.repository';
 
 export class AuthService{
 

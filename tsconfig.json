@@ -18,7 +18,14 @@
     "noUnusedLocals": true,          
     "noUnusedParameters": true,      
     "noImplicitReturns": true,       
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@/common/*": ["common/*"],
+      "@/core/*": ["core/*"],
+      "@/features/*": ["features/*"],
+      "@/config/*": ["config/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
