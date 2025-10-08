@@ -21,3 +21,15 @@ export function verifyToken<T = any>(token: string): T {
   }
 }
 
+export function getTokenExpiration(token: string): Date | null {
+  try {
+    const decoded = jwt.decode(token) as { exp?: number } | null;
+    if (!decoded?.exp) return null;
+    return new Date(decoded.exp * 1000);
+  } catch (err) {
+    console.error("Failed to decode token:", err);
+    return null;
+  }
+}
+
+

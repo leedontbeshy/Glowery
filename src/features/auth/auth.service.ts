@@ -1,7 +1,8 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { signToken, verifyToken } from '@/common/utils/jwt';
+import { signToken, getTokenExpiration } from '@/common/utils/jwt';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/user/user.schema';
 import { UserRepository } from '@/core/user/user.repository';
+import { TokenRepository } from './token/token.repository';
 
 export class AuthService{
 
@@ -17,7 +18,7 @@ export class AuthService{
         if(existing){
             throw new Error("Email already exists")
         }
-        
+
         const hashedPassword = await hashPassword(password);
 
         const user = await UserRepository.create({
@@ -28,7 +29,7 @@ export class AuthService{
         })
 
         return user;
-    }
+    };
 
     static async login(data: LoginInput){
         //Validate input
@@ -70,5 +71,13 @@ export class AuthService{
                 status: user.status
             }
         };
+    };
+
+    static async logout(token: string, user_id: number){
+        const expiredAt = getTokenExpiration(token);
+        if(!expiredAt){
+            throw new Error("Invalid token or mising expiration")
+        }
+        await TokenRepository.addToBlackList(token, user_id, expiredAt);
     }
 }
