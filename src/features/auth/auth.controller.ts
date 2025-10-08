@@ -1,5 +1,4 @@
 import { AuthService } from "./auth.service";
-import { registerSchema, loginSchema } from "../users/user.schema";
 import { Request, Response } from "express";
 
 export const AuthController = {

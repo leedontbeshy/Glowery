@@ -1,4 +1,4 @@
-import {pool} from "../../config/database";
+import {pool} from "@/config/database";
 import { User } from "./user.model";
 import { registerInput } from "./user.schema";
 
