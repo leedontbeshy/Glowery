@@ -4,7 +4,7 @@ import { registerInput } from "./user.schema";
 
 export class UserRepository {
   static async findUserByEmail(email: string) {
-    const result = await pool.query("SELECT * FROM users WHERE email = $1",
+    const result = await pool.query("SELECT id, email, full_name, phone, created_at FROM users WHERE email = $1",
       [email],
     );
     return result.rows[0] || null;
@@ -14,7 +14,7 @@ export class UserRepository {
     const result = await pool.query(
       `INSERT INTO users (email, password, full_name, phone)
             VALUES ($1, $2, $3, $4)
-            RETURNING *`,
+            RETURNING id, email, full_name, phone, created_at`,
       [data.email, data.password, data.full_name, data.phone || null]
     );
     return result.rows[0];
