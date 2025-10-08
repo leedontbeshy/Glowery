@@ -1,5 +1,5 @@
-import argon2 from 'argon2';
-import jwt from 'jsonwebtoken';
+import { hashPassword, verifyPassword } from '@/common/utils/hash';
+import { signToken, verifyToken } from '@/common/utils/jwt';
 import { registerSchema, loginSchema, registerInput, loginInput } from '@/core/user/user.schema';
 import { UserRepository } from '@/core/user/user.repository';
 
@@ -18,7 +18,7 @@ export class AuthService{
             throw new Error("Email already exists")
         }
 
-        const hashedPassword = await argon2.hash(password);
+        const hashedPassword = await hashPassword(password);
 
         const user = await UserRepository.create({
             email,
@@ -46,23 +46,18 @@ export class AuthService{
         }
 
         //So sanh pass
-        const match = await argon2.verify(user.password, password);
+        const match = await verifyPassword(user.password, password);
         if(!match){
             throw new Error("Wrong Password");
         }
 
         await UserRepository.updateLastLogin(user.id);
 
-        const token = jwt.sign(
-        {
-            id: user.id, 
-            email: user.email, 
-            role: user.role 
-        }, 
-        process.env.JWT_SECRET as string, 
-        {
-            expiresIn: "7d"
-        });
+        const token = signToken({
+            id: user.id,
+            email: user.email,
+            role: user.role
+        }, process.env.JWT_EXPIRES_IN as string)
 
         return{
             message: "Login Sucessfully",
