@@ -4,7 +4,7 @@ import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/u
 import { UserRepository } from '@/core/user/user.repository';
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
-import { basePasswordSchema, PasswordSchema } from '@/common/schemas/common.schema';
+import { basePasswordSchema } from '@/common/schemas/common.schema';
 
 export class AuthService{
 
