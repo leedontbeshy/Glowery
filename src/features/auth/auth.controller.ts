@@ -45,5 +45,14 @@ export const AuthController = {
                 error: error.message
             });
         }
+    },
+    async forgetPassword(req: Request, res: Response){
+        try {
+            const result = await AuthService.forgotPassword(req.body.email);
+            return res.status(200).json(result);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
     }
+
 }

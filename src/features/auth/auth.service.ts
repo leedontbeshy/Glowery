@@ -4,7 +4,6 @@ import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/u
 import { UserRepository } from '@/core/user/user.repository';
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
-import { da } from 'zod/v4/locales';
 
 export class AuthService{
 
@@ -84,7 +83,7 @@ export class AuthService{
     }
 
     static async forgotPassword(email: string) :Promise<any>{
-        const user = UserRepository.findUserByEmail(email);
+        const user = await UserRepository.findUserByEmail(email);
         if(!user){
             return {
                 success:true,
