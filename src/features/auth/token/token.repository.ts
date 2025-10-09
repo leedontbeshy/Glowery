@@ -66,4 +66,24 @@ export class TokenRepository {
       throw new Error("Failed to check reset token: " + (error as Error).message);
     }
   }
+
+  static async findValidToken(token: string):Promise<any>{
+      try {
+        const result = await pool.query(`SELECT email, expires_at FROM reset_tokens WHERE token = $1`, [token]);
+        if(result.rowCount === 0) return null;
+
+        const record = result.rows[0];
+        const now = new Date();
+
+        if(new Date(record.expires_at) < now){
+              await pool.query(`DELETE FROM reset_tokens WHERE token = $1`, [
+                token,
+              ]);
+              throw new Error("Reset token has expired");
+        }
+        return { email: record.email };
+      } catch (error: any) {
+        throw error
+      }
+  }
 }

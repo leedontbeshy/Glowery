@@ -15,4 +15,6 @@ router.post("/logout",AuthMiddleware,AuthController.logout)
 
 router.post("/reset-password", AuthController.forgetPassword)
 
+router.post("/reset-password/confirm", AuthController.resetPassword);
+
 export default router;

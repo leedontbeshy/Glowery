@@ -53,6 +53,17 @@ export const AuthController = {
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
         }
+    },
+
+    async resetPassword(req: Request, res: Response) {
+    try {
+        const { token, newPassword} = req.body;
+        const result = await AuthService.resetPassword(token, newPassword);
+        return res.status(200).json(result);
+    } catch (error: any) {
+        return res.status(400).json({ error: error.message });
     }
+    }
+
 
 }

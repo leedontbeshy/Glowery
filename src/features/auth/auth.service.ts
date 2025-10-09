@@ -4,6 +4,7 @@ import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/u
 import { UserRepository } from '@/core/user/user.repository';
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
+import { basePasswordSchema, PasswordSchema } from '@/common/schemas/common.schema';
 
 export class AuthService{
 
@@ -101,5 +102,22 @@ export class AuthService{
 
         //Lúc sau phát triển lại bằng cách gửi email
         return data;
+    }
+
+    static async resetPassword(resetToken: string, newPassword:string ){
+          const parsed = basePasswordSchema.safeParse(newPassword);
+          if (!parsed.success) {
+            throw new Error(parsed.error.issues[0].message);
+          }
+        const data = await TokenRepository.findValidToken(resetToken);
+        if(!data){
+            throw new Error("Invalid or expired reset token");
+        }
+        await UserRepository.updatePasswordByEmail(data.email, newPassword);
+        await TokenRepository.deleteExistedToken(data.email);
+        return {
+          success: true,
+          message: "Password has been reset successfully.",
+        };
     }
 }
