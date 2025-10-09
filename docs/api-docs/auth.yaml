@@ -49,3 +49,16 @@ paths:
           description: Đăng ký thành công
         400:
           description: Email đã tồn tại
+
+  /api/auth/logout:
+   post:
+    summary: Đăng xuất tài khoản
+    tags:
+      - Auth
+    requestBody:
+      required: true
+      content:
+        application/json:
+          type: object
+          properties:
+            

@@ -3,6 +3,8 @@ import { signToken, getTokenExpiration } from '@/common/utils/jwt';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/user/user.schema';
 import { UserRepository } from '@/core/user/user.repository';
 import { TokenRepository } from './token/token.repository';
+import { ResetTokenService } from './token/token.service';
+import { da } from 'zod/v4/locales';
 
 export class AuthService{
 
@@ -79,5 +81,26 @@ export class AuthService{
             throw new Error("Invalid token or mising expiration")
         }
         await TokenRepository.addToBlackList(token, user_id, expiredAt);
+    }
+
+    static async forgotPassword(email: string) :Promise<any>{
+        const user = UserRepository.findUserByEmail(email);
+        if(!user){
+            return {
+                success:true,
+                message:"If the email exists in the system, you will receive an email with instructions to reset your password."
+            };
+        };
+
+        const hasOldToken = await TokenRepository.checkResetToken(email);
+        if(hasOldToken){
+            await TokenRepository.deleteExistedToken(email);
+        }
+        const data = await ResetTokenService.createNewResetToken();
+
+        await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt);
+
+        //Lúc sau phát triển lại bằng cách gửi email
+        return data;
     }
 }
