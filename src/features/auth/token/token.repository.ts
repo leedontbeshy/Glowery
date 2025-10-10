@@ -1,11 +1,11 @@
 import { pool } from '@/config/database';
 
 export class TokenRepository {
-  static async addToBlackList(token: string, user_id: number, created_at: Date) {
+  static async addToBlackList(token: string, user_id: number, expires_at: Date) {
     await pool.query(
-      `INSERT INTO blacklisted_tokens (token, user_id, created_at)
+      `INSERT INTO blacklisted_tokens (token, user_id, expires_at)
             VALUES ($1, $2, $3)`,
-      [token, user_id, created_at],
+      [token, user_id, expires_at],
     );
   }
 

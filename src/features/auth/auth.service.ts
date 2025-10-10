@@ -79,11 +79,11 @@ export class AuthService {
   }
 
   static async logout(token: string, user_id: number) {
-    const expiredAt = getTokenExpiration(token);
-    if (!expiredAt) {
+    const expiresAt = getTokenExpiration(token);
+    if (!expiresAt) {
       throw new Error('Invalid token or mising expiration');
     }
-    await TokenRepository.addToBlackList(token, user_id, expiredAt);
+    await TokenRepository.addToBlackList(token, user_id, expiresAt);
   }
 
   static async forgotPassword(email: string): Promise<any> {

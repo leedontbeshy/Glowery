@@ -5,7 +5,7 @@ export const swaggerOptions: swaggerJSDoc.Options = {
     openapi: '3.0.0',
     info: {
       title: 'Glowery API Docs',
-      version: '1.0.0',
+      version: '1.0.5',
       description: 'RESTful API documentation using Swagger + YAML',
     },
     servers: [

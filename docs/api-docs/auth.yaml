@@ -1,31 +1,8 @@
 paths:
-  /api/auth/login:
-    post:
-      summary: Đăng nhập người dùng
-      tags:
-        - Auth
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  example: dphuclee@gmail.com
-                password:
-                  type: string
-                  example: 123456
-      responses:
-        200:
-          description: Đăng nhập thành công
-        400:
-          description: Dữ liệu không hợp lệ
-
   /api/auth/register:
     post:
-      summary: Đăng ký tài khoản mới
+      summary: Register a new user account
+      description: Creates a new user account with email, password, full name, and optional phone number
       tags:
         - Auth
       requestBody:
@@ -34,31 +11,347 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
+                - confirm_password
+                - full_name
               properties:
                 email:
                   type: string
+                  format: email
+                  description: User's email address (must be unique)
                   example: user@example.com
                 password:
                   type: string
-                  example: abc12345
+                  format: password
+                  minLength: 8
+                  maxLength: 50
+                  description: Password (min 8 chars, must include uppercase, lowercase, number, and special character @$!%*?&#)
+                  example: Password123!
+                confirm_password:
+                  type: string
+                  format: password
+                  description: Must match the password field
+                  example: Password123!
                 full_name:
                   type: string
-                  example: Nguyen Van A
+                  minLength: 2
+                  maxLength: 100
+                  description: User's full name (letters and spaces only)
+                  example: John Doe
+                phone:
+                  type: string
+                  pattern: '^(0|\+84)[0-9]{9,10}$'
+                  description: Vietnamese phone number (optional)
+                  example: "0987654321"
       responses:
         201:
-          description: Đăng ký thành công
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Register success
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      email:
+                        type: string
+                        example: user@example.com
+                      full_name:
+                        type: string
+                        example: John Doe
+                      phone:
+                        type: string
+                        example: "0987654321"
+                      role:
+                        type: string
+                        enum: [user, seller, admin]
+                        example: user
+                      status:
+                        type: string
+                        enum: [active, inactive, suspended]
+                        example: active
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
         400:
-          description: Email đã tồn tại
+          description: Bad request - Invalid input or email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Email already exists
+
+  /api/auth/login:
+    post:
+      summary: User login
+      description: Authenticate user with email and password
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  description: User's password
+                  example: Password123!
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Login Sucessfully
+                      token:
+                        type: string
+                        description: JWT access token
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjAwMTU3NDgsImV4cCI6MTc2MDYyMDU0OH0.abc123def456
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          email:
+                            type: string
+                            example: user@example.com
+                          full_name:
+                            type: string
+                            example: John Doe
+                          role:
+                            type: string
+                            enum: [user, seller, admin]
+                            example: user
+                          status:
+                            type: string
+                            enum: [active, inactive, suspended]
+                            example: active
+        400:
+          description: Bad request - Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Invalid email format
+                      - Email does not exsit
+                      - Wrong Password
+                    example: Wrong Password
 
   /api/auth/logout:
-   post:
-    summary: Đăng xuất tài khoản
-    tags:
-      - Auth
-    requestBody:
-      required: true
-      content:
-        application/json:
-          type: object
-          properties:
+    post:
+      summary: User logout
+      description: Logout user by invalidating the JWT token (adds token to blacklist)
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: Bearer token
+          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYwMDE1NzQ4LCJleHAiOjE3NjA2MjA1NDh9.abc123
+      responses:
+        200:
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout Successfully
+        400:
+          description: Bad request - Invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid Token
+        401:
+          description: Unauthorized - Missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /api/auth/reset-password:
+    post:
+      summary: Forgot password - Request reset token
+      description: Request a password reset token by providing email address. If the email exists, a reset token will be generated (in production, this would be sent via email)
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's registered email address
+                  example: user@example.com
+      responses:
+        200:
+          description: Reset token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: If the email exists in the system, you will receive an email with instructions to reset your password.
+                  resetToken:
+                    type: string
+                    description: Reset token (only returned in development, should be sent via email in production)
+                    example: abc123def456ghi789jkl012mno345
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    description: Token expiration timestamp
+                    example: "2025-10-10T12:00:00.000Z"
+        400:
+          description: Bad request - Invalid email format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email format
+
+  /api/auth/reset-password/confirm:
+    post:
+      summary: Reset password with token
+      description: Reset user password using the reset token received from forgot password request
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  description: Reset token received from forgot password request
+                  example: abc123def456ghi789jkl012mno345
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 50
+                  description: New password (min 8 chars, must include uppercase, lowercase, number, and special character @$!%*?&#)
+                  example: NewPassword123!
+      responses:
+        200:
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Password has been reset successfully.
+        400:
+          description: Bad request - Invalid or expired token, or invalid password format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - Invalid or expired reset token
+                      - Password must be at least 8 characters
+                      - Must contain uppercase letter
+                      - Must contain lowercase letter
+                      - Must contain number
+                      - Must contain special character (@$!%*?&#)
+                    example: Invalid or expired reset token
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
             
