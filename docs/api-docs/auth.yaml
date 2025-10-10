@@ -1,0 +1,64 @@
+paths:
+  /api/auth/login:
+    post:
+      summary: Đăng nhập người dùng
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: dphuclee@gmail.com
+                password:
+                  type: string
+                  example: 123456
+      responses:
+        200:
+          description: Đăng nhập thành công
+        400:
+          description: Dữ liệu không hợp lệ
+
+  /api/auth/register:
+    post:
+      summary: Đăng ký tài khoản mới
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: abc12345
+                full_name:
+                  type: string
+                  example: Nguyen Van A
+      responses:
+        201:
+          description: Đăng ký thành công
+        400:
+          description: Email đã tồn tại
+
+  /api/auth/logout:
+   post:
+    summary: Đăng xuất tài khoản
+    tags:
+      - Auth
+    requestBody:
+      required: true
+      content:
+        application/json:
+          type: object
+          properties:
+            

@@ -1,7 +1,10 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { signToken, verifyToken } from '@/common/utils/jwt';
+import { signToken, getTokenExpiration } from '@/common/utils/jwt';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/user/user.schema';
 import { UserRepository } from '@/core/user/user.repository';
+import { TokenRepository } from './token/token.repository';
+import { ResetTokenService } from './token/token.service';
+import { basePasswordSchema } from '@/common/schemas/common.schema';
 
 export class AuthService{
 
@@ -17,7 +20,7 @@ export class AuthService{
         if(existing){
             throw new Error("Email already exists")
         }
-        
+
         const hashedPassword = await hashPassword(password);
 
         const user = await UserRepository.create({
@@ -28,7 +31,7 @@ export class AuthService{
         })
 
         return user;
-    }
+    };
 
     static async login(data: LoginInput){
         //Validate input
@@ -69,6 +72,52 @@ export class AuthService{
                 role: user.role,
                 status: user.status
             }
+        };
+    };
+
+    static async logout(token: string, user_id: number){
+        const expiredAt = getTokenExpiration(token);
+        if(!expiredAt){
+            throw new Error("Invalid token or mising expiration")
+        }
+        await TokenRepository.addToBlackList(token, user_id, expiredAt);
+    }
+
+    static async forgotPassword(email: string) :Promise<any>{
+        const user = await UserRepository.findUserByEmail(email);
+        if(!user){
+            return {
+                success:true,
+                message:"If the email exists in the system, you will receive an email with instructions to reset your password."
+            };
+        };
+
+        const hasOldToken = await TokenRepository.checkResetToken(email);
+        if(hasOldToken){
+            await TokenRepository.deleteExistedToken(email);
+        }
+        const data = await ResetTokenService.createNewResetToken();
+
+        await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt);
+
+        //Lúc sau phát triển lại bằng cách gửi email
+        return data;
+    }
+
+    static async resetPassword(resetToken: string, newPassword:string ){
+          const parsed = basePasswordSchema.safeParse(newPassword);
+          if (!parsed.success) {
+            throw new Error(parsed.error.issues[0].message);
+          }
+        const data = await TokenRepository.findValidToken(resetToken);
+        if(!data){
+            throw new Error("Invalid or expired reset token");
+        }
+        await UserRepository.updatePasswordByEmail(data.email, newPassword);
+        await TokenRepository.deleteExistedToken(data.email);
+        return {
+          success: true,
+          message: "Password has been reset successfully.",
         };
     }
 }
