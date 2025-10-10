@@ -1,12 +1,12 @@
-export class ApiError extends Error{
-    constructor(
-        public statusCode: number,
-        public message: string,
-        public isOperation = true
-    ){
-        super(message);
-        Object.setPrototypeOf(this,ApiError.prototype);
-    }
+export class ApiError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public isOperation = true,
+  ) {
+    super(message);
+    Object.setPrototypeOf(this, ApiError.prototype);
+  }
 }
 
 export class BadRequestError extends ApiError {

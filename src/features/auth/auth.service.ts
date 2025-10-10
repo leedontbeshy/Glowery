@@ -2,122 +2,126 @@ import { hashPassword, verifyPassword } from '@/common/utils/hash';
 import { signToken, getTokenExpiration } from '@/common/utils/jwt';
 import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/user/user.schema';
 import { UserRepository } from '@/core/user/user.repository';
-import { TokenRepository } from './token/token.repository';
-import { ResetTokenService } from './token/token.service';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
 
-export class AuthService{
+import { TokenRepository } from './token/token.repository';
+import { ResetTokenService } from './token/token.service';
 
-    static async register(data: RegisterInput){
-        const parsed = registerSchema.safeParse(data);
-        if(!parsed.success){
-            throw new Error(parsed.error.issues[0].message)
-        }
+export class AuthService {
+  static async register(data: RegisterInput) {
+    const parsed = registerSchema.safeParse(data);
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0].message);
+    }
 
-        const {email, password, full_name, phone} = parsed.data;
-        
-        const existing = await UserRepository.findUserByEmail(email);
-        if(existing){
-            throw new Error("Email already exists")
-        }
+    const { email, password, full_name, phone } = parsed.data;
 
-        const hashedPassword = await hashPassword(password);
+    const existing = await UserRepository.findUserByEmail(email);
+    if (existing) {
+      throw new Error('Email already exists');
+    }
 
-        const user = await UserRepository.create({
-            email,
-            password: hashedPassword,
-            full_name,
-            phone
-        })
+    const hashedPassword = await hashPassword(password);
 
-        return user;
+    const user = await UserRepository.create({
+      email,
+      password: hashedPassword,
+      full_name,
+      phone,
+    });
+
+    return user;
+  }
+
+  static async login(data: LoginInput) {
+    //Validate input
+    const parsed = loginSchema.safeParse(data);
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0].message);
+    }
+
+    //Tim user
+    const { email, password } = parsed.data;
+
+    const user = await UserRepository.findUserByEmail(email);
+    if (!user) {
+      throw new Error('Email does not exsit');
+    }
+
+    //So sanh pass
+    const match = await verifyPassword(user.password, password);
+    if (!match) {
+      throw new Error('Wrong Password');
+    }
+
+    await UserRepository.updateLastLogin(user.id);
+
+    const token = signToken(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_EXPIRES_IN as string,
+    );
+
+    return {
+      message: 'Login Sucessfully',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        status: user.status,
+      },
     };
+  }
 
-    static async login(data: LoginInput){
-        //Validate input
-        const parsed = loginSchema.safeParse(data);
-        if(!parsed.success){
-            throw new Error(parsed.error.issues[0].message);
-        }
+  static async logout(token: string, user_id: number) {
+    const expiredAt = getTokenExpiration(token);
+    if (!expiredAt) {
+      throw new Error('Invalid token or mising expiration');
+    }
+    await TokenRepository.addToBlackList(token, user_id, expiredAt);
+  }
 
-        //Tim user
-        const {email, password} = parsed.data;
+  static async forgotPassword(email: string): Promise<any> {
+    const user = await UserRepository.findUserByEmail(email);
+    if (!user) {
+      return {
+        success: true,
+        message:
+          'If the email exists in the system, you will receive an email with instructions to reset your password.',
+      };
+    }
 
-        const user = await UserRepository.findUserByEmail(email)
-        if(!user){
-            throw new Error("Email does not exsit");
-        }
+    const hasOldToken = await TokenRepository.checkResetToken(email);
+    if (hasOldToken) {
+      await TokenRepository.deleteExistedToken(email);
+    }
+    const data = await ResetTokenService.createNewResetToken();
 
-        //So sanh pass
-        const match = await verifyPassword(user.password, password);
-        if(!match){
-            throw new Error("Wrong Password");
-        }
+    await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt);
 
-        await UserRepository.updateLastLogin(user.id);
+    //Lúc sau phát triển lại bằng cách gửi email
+    return data;
+  }
 
-        const token = signToken({
-            id: user.id,
-            email: user.email,
-            role: user.role
-        }, process.env.JWT_EXPIRES_IN as string)
-
-        return{
-            message: "Login Sucessfully",
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                full_name: user.full_name,
-                role: user.role,
-                status: user.status
-            }
-        };
+  static async resetPassword(resetToken: string, newPassword: string) {
+    const parsed = basePasswordSchema.safeParse(newPassword);
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0].message);
+    }
+    const data = await TokenRepository.findValidToken(resetToken);
+    if (!data) {
+      throw new Error('Invalid or expired reset token');
+    }
+    await UserRepository.updatePasswordByEmail(data.email, newPassword);
+    await TokenRepository.deleteExistedToken(data.email);
+    return {
+      success: true,
+      message: 'Password has been reset successfully.',
     };
-
-    static async logout(token: string, user_id: number){
-        const expiredAt = getTokenExpiration(token);
-        if(!expiredAt){
-            throw new Error("Invalid token or mising expiration")
-        }
-        await TokenRepository.addToBlackList(token, user_id, expiredAt);
-    }
-
-    static async forgotPassword(email: string) :Promise<any>{
-        const user = await UserRepository.findUserByEmail(email);
-        if(!user){
-            return {
-                success:true,
-                message:"If the email exists in the system, you will receive an email with instructions to reset your password."
-            };
-        };
-
-        const hasOldToken = await TokenRepository.checkResetToken(email);
-        if(hasOldToken){
-            await TokenRepository.deleteExistedToken(email);
-        }
-        const data = await ResetTokenService.createNewResetToken();
-
-        await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt);
-
-        //Lúc sau phát triển lại bằng cách gửi email
-        return data;
-    }
-
-    static async resetPassword(resetToken: string, newPassword:string ){
-          const parsed = basePasswordSchema.safeParse(newPassword);
-          if (!parsed.success) {
-            throw new Error(parsed.error.issues[0].message);
-          }
-        const data = await TokenRepository.findValidToken(resetToken);
-        if(!data){
-            throw new Error("Invalid or expired reset token");
-        }
-        await UserRepository.updatePasswordByEmail(data.email, newPassword);
-        await TokenRepository.deleteExistedToken(data.email);
-        return {
-          success: true,
-          message: "Password has been reset successfully.",
-        };
-    }
+  }
 }

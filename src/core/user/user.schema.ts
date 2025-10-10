@@ -1,18 +1,15 @@
-import { z } from "zod";
+import { z } from 'zod';
+
 import {
   basePasswordSchema,
   basePhoneSchema,
   baseNameSchema,
   tokenSchema,
-} from "@/common/schemas/common.schema";
+} from '@/common/schemas/common.schema';
 
 export const registerSchema = z
   .object({
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email("Invalid email format"),
+    email: z.string().trim().toLowerCase().email('Invalid email format'),
     password: basePasswordSchema,
     confirm_password: z.string().trim(),
     full_name: baseNameSchema,
@@ -20,17 +17,13 @@ export const registerSchema = z
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords don't match",
-    path: ["confirm_password"],
+    path: ['confirm_password'],
   })
   .strict();
 
 export const createUserInput = z
   .object({
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email("Invalid email format"),
+    email: z.string().trim().toLowerCase().email('Invalid email format'),
     password: basePasswordSchema,
     full_name: baseNameSchema,
     phone: basePhoneSchema.optional(),
@@ -39,22 +32,14 @@ export const createUserInput = z
 
 export const loginSchema = z
   .object({
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email("Invalid email format"),
-    password: z.string().trim().min(6, "Password must be at least 6 characters"),
+    email: z.string().trim().toLowerCase().email('Invalid email format'),
+    password: z.string().trim().min(6, 'Password must be at least 6 characters'),
   })
   .strict();
 
 export const resetPasswordRequestSchema = z
   .object({
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email("Invalid email format"),
+    email: z.string().trim().toLowerCase().email('Invalid email format'),
   })
   .strict();
 
@@ -66,23 +51,23 @@ export const resetPasswordSchema = z
   })
   .refine((data) => data.new_password === data.confirm_password, {
     message: "Passwords don't match",
-    path: ["confirm_password"],
+    path: ['confirm_password'],
   })
   .strict();
 
 export const changePasswordSchema = z
   .object({
-    old_password: z.string().trim().min(1, "Old password is required"),
+    old_password: z.string().trim().min(1, 'Old password is required'),
     new_password: basePasswordSchema,
     confirm_password: z.string().trim(),
   })
   .refine((data) => data.new_password === data.confirm_password, {
     message: "Passwords don't match",
-    path: ["confirm_password"],
+    path: ['confirm_password'],
   })
   .refine((data) => data.old_password !== data.new_password, {
-    message: "New password must be different from old password",
-    path: ["new_password"],
+    message: 'New password must be different from old password',
+    path: ['new_password'],
   })
   .strict();
 
