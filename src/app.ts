@@ -9,13 +9,13 @@ const app = express();
 
 app.use(express.json());
 
-// 🧱 Tạo Swagger spec
+//  Tạo Swagger spec
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// 📘 Thêm Swagger UI route
+// Thêm Swagger UI route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// 📦 Mount toàn bộ feature routes (vd /api/auth, /api/users)
+//  Mount toàn bộ feature routes (vd /api/auth, /api/users)
 app.use('/api', routes);
 
 export default app;
