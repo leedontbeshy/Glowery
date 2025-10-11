@@ -2,7 +2,7 @@ paths:
   /api/auth/register:
     post:
       summary: Register a new user account
-      description: Creates a new user account with email, password, full name, and optional phone number
+      description: Creates a new user account with email, username, password, full name, address, and optional phone number
       tags:
         - Auth
       requestBody:
@@ -15,12 +15,14 @@ paths:
                 - email
                 - password
                 - confirm_password
+                - username
                 - full_name
+                - address
               properties:
                 email:
                   type: string
                   format: email
-                  description: User's email address (must be unique)
+                  description: User's email address (must be unique, will be converted to lowercase)
                   example: user@example.com
                 password:
                   type: string
@@ -29,29 +31,29 @@ paths:
                   maxLength: 50
                   description: Password (min 8 chars, must include uppercase, lowercase, number, and special character @$!%*?&#)
                   example: Password123!
-                username:
-                  type: string
-                  format: username
-                  description: username
-                  maxLength: 10
-                  example: sasjiow
-                address:
-                  type: string
-                  format: address
-                  maxLength: 50
-                  description: address
-                  example: jhsf0123ds
                 confirm_password:
                   type: string
                   format: password
                   description: Must match the password field
                   example: Password123!
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 10
+                  pattern: '^[a-zA-Z0-9_]+$'
+                  description: Username (3-10 characters, alphanumeric and underscore only)
+                  example: john_doe
                 full_name:
                   type: string
                   minLength: 2
                   maxLength: 100
                   description: User's full name (letters and spaces only)
                   example: John Doe
+                address:
+                  type: string
+                  maxLength: 50
+                  description: User's address
+                  example: 123 Main Street, Hanoi
                 phone:
                   type: string
                   pattern: '^(0|\+84)[0-9]{9,10}$'
@@ -77,26 +79,24 @@ paths:
                       email:
                         type: string
                         example: user@example.com
+                      username:
+                        type: string
+                        example: john_doe
                       full_name:
                         type: string
                         example: John Doe
                       phone:
                         type: string
+                        nullable: true
                         example: "0987654321"
-                      role:
+                      address:
                         type: string
-                        enum: [user, seller, admin]
-                        example: user
-                      status:
-                        type: string
-                        enum: [active, inactive, suspended]
-                        example: active
+                        nullable: true
+                        example: 123 Main Street, Hanoi
                       created_at:
                         type: string
                         format: date-time
-                      updated_at:
-                        type: string
-                        format: date-time
+                        example: "2025-10-11T10:30:00.000Z"
         400:
           description: Bad request - Invalid input or email already exists
           content:
@@ -106,12 +106,23 @@ paths:
                 properties:
                   error:
                     type: string
+                    enum:
+                      - Invalid email format
+                      - Email already exists
+                      - Password must be at least 8 characters
+                      - Must contain uppercase letter
+                      - Must contain lowercase letter
+                      - Must contain number
+                      - Must contain special character (@$!%*?&#)
+                      - Passwords don't match
+                      - Username must be 3-10 characters
+                      - Full name must be 2-100 characters
                     example: Email already exists
 
   /api/auth/login:
     post:
       summary: User login
-      description: Authenticate user with email and password
+      description: Authenticate user with email and password, returns JWT token and user info
       tags:
         - Auth
       requestBody:
@@ -127,13 +138,13 @@ paths:
                 email:
                   type: string
                   format: email
-                  description: User's email address
+                  description: User's email address (will be converted to lowercase)
                   example: user@example.com
                 password:
                   type: string
                   format: password
                   minLength: 6
-                  description: User's password
+                  description: User's password (minimum 6 characters)
                   example: Password123!
       responses:
         200:
@@ -151,7 +162,7 @@ paths:
                         example: Login Sucessfully
                       token:
                         type: string
-                        description: JWT access token
+                        description: JWT access token (use as Bearer token in Authorization header)
                         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NjAwMTU3NDgsImV4cCI6MTc2MDYyMDU0OH0.abc123def456
                       user:
                         type: object
@@ -159,6 +170,9 @@ paths:
                           id:
                             type: integer
                             example: 1
+                          username:
+                            type: string
+                            example: john_doe
                           email:
                             type: string
                             example: user@example.com
@@ -173,8 +187,12 @@ paths:
                             type: string
                             enum: [active, inactive, suspended]
                             example: active
+                          address:
+                            type: string
+                            nullable: true
+                            example: 123 Main Street, Hanoi
         400:
-          description: Bad request - Invalid credentials
+          description: Bad request - Invalid credentials or input
           content:
             application/json:
               schema:
@@ -186,12 +204,13 @@ paths:
                       - Invalid email format
                       - Email does not exsit
                       - Wrong Password
+                      - Password must be at least 6 characters
                     example: Wrong Password
 
   /api/auth/logout:
     post:
       summary: User logout
-      description: Logout user by invalidating the JWT token (adds token to blacklist)
+      description: Logout user by adding the JWT token to blacklist (token invalidation)
       tags:
         - Auth
       security:
@@ -202,7 +221,8 @@ paths:
           required: true
           schema:
             type: string
-          description: Bearer token
+            pattern: '^Bearer .+'
+          description: Bearer token (JWT from login response)
           example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzYwMDE1NzQ4LCJleHAiOjE3NjA2MjA1NDh9.abc123
       responses:
         200:
@@ -216,7 +236,7 @@ paths:
                     type: string
                     example: Logout Successfully
         400:
-          description: Bad request - Invalid token
+          description: Bad request - Missing or invalid token
           content:
             application/json:
               schema:
@@ -249,7 +269,7 @@ paths:
   /api/auth/reset-password:
     post:
       summary: Forgot password - Request reset token
-      description: Request a password reset token by providing email address. If the email exists, a reset token will be generated (in production, this would be sent via email)
+      description: Request a password reset token by providing email address. If the email exists, a reset token will be generated and stored in database (in production, this should be sent via email). The endpoint always returns success message to prevent email enumeration attacks.
       tags:
         - Auth
       requestBody:
@@ -264,11 +284,11 @@ paths:
                 email:
                   type: string
                   format: email
-                  description: User's registered email address
+                  description: User's registered email address (will be converted to lowercase)
                   example: user@example.com
       responses:
         200:
-          description: Reset token generated successfully
+          description: Request processed successfully (returns reset token in development mode)
           content:
             application/json:
               schema:
@@ -282,13 +302,13 @@ paths:
                     example: If the email exists in the system, you will receive an email with instructions to reset your password.
                   resetToken:
                     type: string
-                    description: Reset token (only returned in development, should be sent via email in production)
-                    example: abc123def456ghi789jkl012mno345
+                    description: Reset token (only returned in development mode, should be sent via email in production)
+                    example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
                   expiresAt:
                     type: string
                     format: date-time
-                    description: Token expiration timestamp
-                    example: "2025-10-10T12:00:00.000Z"
+                    description: Token expiration timestamp (typically 15-60 minutes from creation)
+                    example: "2025-10-11T11:00:00.000Z"
         400:
           description: Bad request - Invalid email format
           content:
@@ -303,7 +323,7 @@ paths:
   /api/auth/reset-password/confirm:
     post:
       summary: Reset password with token
-      description: Reset user password using the reset token received from forgot password request
+      description: Reset user password using the reset token received from forgot password request. The new password will be hashed before storing in database.
       tags:
         - Auth
       requestBody:
@@ -318,8 +338,8 @@ paths:
               properties:
                 token:
                   type: string
-                  description: Reset token received from forgot password request
-                  example: abc123def456ghi789jkl012mno345
+                  description: Reset token received from /api/auth/reset-password endpoint
+                  example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
                 newPassword:
                   type: string
                   format: password
@@ -353,6 +373,7 @@ paths:
                     enum:
                       - Invalid or expired reset token
                       - Password must be at least 8 characters
+                      - Password must be at most 50 characters
                       - Must contain uppercase letter
                       - Must contain lowercase letter
                       - Must contain number
@@ -365,5 +386,6 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login endpoint. Include as "Bearer {token}" in Authorization header.
   
             
