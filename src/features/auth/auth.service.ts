@@ -77,6 +77,7 @@ export class AuthService {
         full_name: user.full_name,
         role: user.role,
         status: user.status,
+        address: user.address
       },
     };
   }

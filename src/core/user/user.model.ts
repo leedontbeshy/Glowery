@@ -17,3 +17,4 @@ export interface User {
   updated_at: Date;
   deleted_at: Date | null;
 }
+

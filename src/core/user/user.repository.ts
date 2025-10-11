@@ -3,6 +3,7 @@ import { hashPassword } from '@/common/utils/hash';
 
 import { User } from './user.model';
 import { CreateUserInput } from './user.schema';
+import { UserBasic } from '@/common/types/user.type';
 
 export class UserRepository {
   static async findUserByEmail(email: string) {
@@ -33,8 +34,10 @@ export class UserRepository {
   }
 
   //User feat
-  static async getUserInfoById(userId: number): Promise<object>{
-    const result = await pool.query(`SELECT id, email,username, phone,address, created_at, status FROM users WHERE id = $1`, [userId]);
+  static async findUserById(userId: number): Promise<UserBasic | null>{
+    const result = await pool.query(
+    `SELECT id, email,username, phone,address, 
+    created_at, status, full_name, last_login_at, role  FROM users WHERE id = $1`, [userId]);
     return result.rows[0] || null;
   }
 }
