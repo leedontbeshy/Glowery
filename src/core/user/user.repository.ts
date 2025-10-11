@@ -28,7 +28,7 @@ export class UserRepository {
     await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [userId]);
   }
 
-  static async updatePasswordByEmail(email: number, password: string): Promise<void> {
+  static async updatePasswordByEmail(email: string, password: string): Promise<void> {
     const hashedPassword = await hashPassword(password);
     await pool.query(`UPDATE users SET password = $1 WHERE email = $2`, [hashedPassword, email]);
   }
