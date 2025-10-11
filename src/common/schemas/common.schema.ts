@@ -1,4 +1,4 @@
-import { uppercase, z } from 'zod';
+import { z } from 'zod';
 
 export const UserRoleEnum = z.enum(['user', 'seller', 'admin']);
 export const UserStatusEnum = z.enum(['active', 'inactive', 'suspended']);
@@ -36,6 +36,9 @@ export const basePhoneSchema = z
   .regex(PHONE_REGEX, 'Invalid Vietnamese phone number format');
 
 export const tokenSchema = z.string().trim().min(1, 'Token is required');
+
+export const baseUsernameSchema = z.string().trim().min(3).max(10, 'Username is too long');
+export const baseAddressSchema = z.string().min(5,'Address must be at least 5 characters').max(100, 'Address is too long');
 
 export type UserRole = z.infer<typeof UserRoleEnum>;
 export type UserStatus = z.infer<typeof UserStatusEnum>;

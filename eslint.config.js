@@ -4,79 +4,80 @@ const prettierPlugin = require('eslint-plugin-prettier');
 const importPlugin = require('eslint-plugin-import');
 
 module.exports = [
-  {
-    ignores: [
-      '.idea/',
-      '.vs/',
-      '.vscode/',
-      'logs/',
-      '*.log',
-      'node_modules/',
-      '*.pem',
-      'keys/',
-      '!keys/*.md',
-      '!keys/*.example',
-      'build/',
-      'dist/',
-      'out/',
-      'coverage/',
-      '*.env',
-      '*.env.test',
-      '*.env copy',
-      '!.env.example',
-      'temp/',
-      '.DS_Store',
-      '*.save',
-      '*.save.*',
-      '.jest/',
-    ],
-  },
+    {
+        ignores: [
+            '.idea/',
+            '.vs/',
+            '.vscode/',
+            'logs/',
+            '*.log',
+            'node_modules/',
+            '*.pem',
+            'keys/',
+            '!keys/*.md',
+            '!keys/*.example',
+            'build/',
+            'dist/',
+            'out/',
+            'coverage/',
+            '*.env',
+            '*.env.test',
+            '*.env copy',
+            '!.env.example',
+            'temp/',
+            '.DS_Store',
+            '*.save',
+            '*.save.*',
+            '.jest/',
+        ],
+    },
 
-  // ⚙️ Rule set chính cho TypeScript
-  {
-    files: ['**/*.ts'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        project: './tsconfig.json',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-      prettier: prettierPlugin,
-      import: importPlugin,
-    },
-    settings: {
-      // 🔗 Giúp ESLint hiểu alias "@/..." trong tsconfig.json
-      'import/resolver': {
-        typescript: {
-          project: './tsconfig.json',
+    {
+        files: ['**/*.ts'],
+        languageOptions: {
+            parser: tsParser,
+            parserOptions: {
+                ecmaVersion: 'latest',
+                sourceType: 'module',
+                project: './tsconfig.json',
+            },
         },
-      },
-    },
-    rules: {
-      'no-console': 'off',
-      'prettier/prettier': ['error', { endOfLine: 'auto' }],
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      'import/order': [
-        'warn',
-        {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            'parent',
-            'sibling',
-            'index',
-          ],
-          'newlines-between': 'always',
+        plugins: {
+            '@typescript-eslint': tsPlugin,
+            prettier: prettierPlugin,
+            import: importPlugin,
         },
-      ],
+        settings: {
+            'import/resolver': {
+                typescript: {
+                    project: './tsconfig.json',
+                },
+            },
+        },
+        rules: {
+            'no-console': 'off',
+            'prettier/prettier': [
+                'off',
+                {
+                    semi: true,
+                    singleQuote: true,
+                    tabWidth: 4,
+                    trailingComma: 'all',
+                    printWidth: 100,
+                    endOfLine: 'auto',
+                },
+            ],
+            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+            '@typescript-eslint/explicit-function-return-type': 'off',
+            '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-non-null-assertion': 'off',
+            'import/order': [
+                'warn',
+                {
+                    groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+                    'newlines-between': 'always',
+                },
+            ],
+        },
     },
-  },
 ];

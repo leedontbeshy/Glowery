@@ -14,7 +14,7 @@ export class AuthService {
       throw new Error(parsed.error.issues[0].message);
     }
 
-    const { email, password, full_name, phone } = parsed.data;
+    const { email, password,username, full_name, phone, address } = parsed.data;
 
     const existing = await UserRepository.findUserByEmail(email);
     if (existing) {
@@ -25,8 +25,10 @@ export class AuthService {
 
     const user = await UserRepository.create({
       email,
+      username,
       password: hashedPassword,
       full_name,
+      address,
       phone,
     });
 
@@ -70,6 +72,7 @@ export class AuthService {
       token,
       user: {
         id: user.id,
+        username: user.username,
         email: user.email,
         full_name: user.full_name,
         role: user.role,

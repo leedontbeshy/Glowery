@@ -29,6 +29,18 @@ paths:
                   maxLength: 50
                   description: Password (min 8 chars, must include uppercase, lowercase, number, and special character @$!%*?&#)
                   example: Password123!
+                username:
+                  type: string
+                  format: username
+                  description: username
+                  maxLength: 10
+                  example: sasjiow
+                address:
+                  type: string
+                  format: address
+                  maxLength: 50
+                  description: address
+                  example: jhsf0123ds
                 confirm_password:
                   type: string
                   format: password
