@@ -83,6 +83,18 @@ export const verifyEmailSchema = z
   })
   .strict();
 
+//Update User Info
+export const updateUserSchema = z
+  .object({
+    full_name: baseNameSchema.optional(),
+    phone: basePhoneSchema.optional(),
+    address: baseAddressSchema.optional(),
+  })
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided',
+  });
+
 // Types
 export type CreateUserInput = z.infer<typeof createUserInput>;
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -91,3 +103,4 @@ export type ResetPasswordRequestInput = z.infer<typeof resetPasswordRequestSchem
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;

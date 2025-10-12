@@ -40,5 +40,9 @@ export class UserRepository {
     created_at, status, full_name, last_login_at, role  FROM users WHERE id = $1`, [userId]);
     return result.rows[0] || null;
   }
+
+  static async updateUser(userId:number, userData: User){
+    
+  }
 }
 

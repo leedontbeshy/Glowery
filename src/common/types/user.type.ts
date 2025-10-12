@@ -11,3 +11,5 @@ export type UserBasic = Pick<User, 'id'
 |'last_login_at'
 |'role'>;
 
+export type UpdateUserData = Partial<Pick<User, 'full_name' | 'phone' | 'address'>>;
+
