@@ -5,15 +5,19 @@ import {
   basePhoneSchema,
   baseNameSchema,
   tokenSchema,
+  baseUsernameSchema,
+  baseAddressSchema,
 } from '@/common/schemas/common.schema';
 
 export const registerSchema = z
   .object({
     email: z.string().trim().toLowerCase().email('Invalid email format'),
     password: basePasswordSchema,
+    username: baseUsernameSchema,
     confirm_password: z.string().trim(),
     full_name: baseNameSchema,
     phone: basePhoneSchema.optional(),
+    address: baseAddressSchema,
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords don't match",
@@ -24,9 +28,11 @@ export const registerSchema = z
 export const createUserInput = z
   .object({
     email: z.string().trim().toLowerCase().email('Invalid email format'),
+    username: baseUsernameSchema,
     password: basePasswordSchema,
     full_name: baseNameSchema,
     phone: basePhoneSchema.optional(),
+    address: baseAddressSchema,
   })
   .strict();
 

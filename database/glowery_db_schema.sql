@@ -48,6 +48,13 @@ CREATE TABLE users (
     deleted_at TIMESTAMP
 );
 
+-- update 2 columns
+
+ALTER TABLE users
+ADD COLUMN username VARCHAR(50) UNIQUE,
+ADD COLUMN address TEXT;
+
+
 
 CREATE TABLE reset_tokens (
     id SERIAL PRIMARY KEY,

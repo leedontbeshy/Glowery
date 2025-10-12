@@ -1,0 +1,98 @@
+paths:
+  /api/users/{id}:
+    get:
+      summary: Get user basic information by ID
+      description: Retrieve basic information of a user by their user ID. This endpoint is public and does not require authentication.
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: User ID
+          example: 1
+      responses:
+        200:
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  result:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                        description: User ID
+                        example: 1
+                      email:
+                        type: string
+                        format: email
+                        description: User's email address
+                        example: user@example.com
+                      username:
+                        type: string
+                        description: User's username
+                        example: john_doe
+                      full_name:
+                        type: string
+                        description: User's full name
+                        example: John Doe
+                      phone:
+                        type: string
+                        nullable: true
+                        description: User's phone number (Vietnamese format)
+                        example: "0987654321"
+                      address:
+                        type: string
+                        nullable: true
+                        description: User's address
+                        example: 123 Main Street, Hanoi
+                      role:
+                        type: string
+                        enum: [user, seller, admin]
+                        description: User's role in the system
+                        example: user
+                      status:
+                        type: string
+                        enum: [active, inactive, suspended]
+                        description: User's account status
+                        example: active
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: Account creation timestamp
+                        example: "2025-10-11T10:30:00.000Z"
+                      last_login_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: Last login timestamp
+                        example: "2025-10-11T15:45:30.000Z"
+        400:
+          description: Bad request - Invalid user ID or user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User not found
+              examples:
+                invalidId:
+                  summary: Invalid user ID format
+                  value:
+                    error: Invalid user ID
+                userNotFound:
+                  summary: User does not exist
+                  value:
+                    error: User not found
