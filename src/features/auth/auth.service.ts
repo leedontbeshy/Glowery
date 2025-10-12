@@ -14,7 +14,7 @@ export class AuthService {
       throw new Error(parsed.error.issues[0].message);
     }
 
-    const { email, password, full_name, phone } = parsed.data;
+    const { email, password,username, full_name, phone, address } = parsed.data;
 
     const existing = await UserRepository.findUserByEmail(email);
     if (existing) {
@@ -25,8 +25,10 @@ export class AuthService {
 
     const user = await UserRepository.create({
       email,
+      username,
       password: hashedPassword,
       full_name,
+      address,
       phone,
     });
 
@@ -70,20 +72,22 @@ export class AuthService {
       token,
       user: {
         id: user.id,
+        username: user.username,
         email: user.email,
         full_name: user.full_name,
         role: user.role,
         status: user.status,
+        address: user.address
       },
     };
   }
 
   static async logout(token: string, user_id: number) {
-    const expiredAt = getTokenExpiration(token);
-    if (!expiredAt) {
+    const expiresAt = getTokenExpiration(token);
+    if (!expiresAt) {
       throw new Error('Invalid token or mising expiration');
     }
-    await TokenRepository.addToBlackList(token, user_id, expiredAt);
+    await TokenRepository.addToBlackList(token, user_id, expiresAt);
   }
 
   static async forgotPassword(email: string): Promise<any> {

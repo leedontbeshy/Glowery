@@ -47,6 +47,7 @@ export const AuthController = {
       });
     }
   },
+
   async forgetPassword(req: Request, res: Response) {
     try {
       const result = await AuthService.forgotPassword(req.body.email);
