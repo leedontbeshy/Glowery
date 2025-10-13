@@ -80,4 +80,19 @@ module.exports = [
             ],
         },
     },
+
+        {
+        files: ['test/**/*.ts'],
+        languageOptions: {
+            parser: tsParser,
+            parserOptions: {
+                ecmaVersion: 'latest',
+                sourceType: 'module',
+                project: './tsconfig.test.json',
+            },
+        },
+        plugins: {
+            '@typescript-eslint': tsPlugin,
+        },
+    },
 ];
