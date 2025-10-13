@@ -57,7 +57,7 @@ module.exports = [
         rules: {
             'no-console': 'off',
             'prettier/prettier': [
-                'off',
+                'warn',
                 {
                     semi: true,
                     singleQuote: true,
