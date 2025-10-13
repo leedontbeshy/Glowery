@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 
 import { UserService } from "./user.service";
+import { success } from "zod";
+import { fa } from "zod/v4/locales";
 
 
 export const UserController = {
@@ -16,6 +18,22 @@ export const UserController = {
             return res.status(400).json({
             error: error.message,
         });
+        }
+    },
+    async updateUserInfo(req: Request, res: Response): Promise<any>{
+        try {
+            const userId = Number(req.params.id);
+            const result = await UserService.updateUserInfo(userId, req.body);
+
+            return res.status(200).json({
+                success: true,
+                result
+            })
+        } catch (error: any) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            })
         }
     }
 }
