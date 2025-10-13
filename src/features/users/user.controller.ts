@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { UserService } from './user.service';
+import { success } from 'zod';
 
 export const UserController = {
     async getUserInfo(req: Request, res: Response) {
@@ -33,4 +34,20 @@ export const UserController = {
             });
         }
     },
+
+    async updatePassword(req: Request, res: Response):Promise<any>{
+        try {
+            const result = await UserService.updatePassword(Number(req.params.id),req.body);
+            return res.status(200).json({
+                success: true,
+                result,
+            })
+
+        } catch (error: any) {
+            return res.status(400).json({
+                success: false,
+                message: error.message,
+            });
+        }
+    }
 };

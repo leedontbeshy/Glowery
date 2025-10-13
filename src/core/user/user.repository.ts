@@ -35,13 +35,6 @@ export class UserRepository {
         await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [userId]);
     }
 
-    static async updatePasswordByEmail(email: string, password: string): Promise<void> {
-        const hashedPassword = await hashPassword(password);
-        await pool.query(`UPDATE users SET password = $1 WHERE email = $2`, [
-            hashedPassword,
-            email,
-        ]);
-    }
 
     //User feat
     static async findUserById(userId: number): Promise<UserBasic | null> {
@@ -70,13 +63,23 @@ export class UserRepository {
         }
     }
 
-    static async changePassword(userId: number, password: string){
+    static async updatePasswordById(userId: number, password: string){
       try {
         const result = await pool.query(`UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2
-          RETURNING id, email, username, fullname`, [password, userId]);
+          RETURNING id, email, username, full_name`, [password, userId]);
           return result.rows[0] || null;
       } catch (error: any) {
         throw error;
       }
     }
+
+    static async getPasswordById(userId: number): Promise<string | null>{
+      try {
+        const result = await pool.query(`SELECT password FROM users WHERE id = $1`, [userId]);
+      if (result.rows.length === 0) return null;
+      return result.rows[0]?.password || null;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

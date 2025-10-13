@@ -1,5 +1,5 @@
 import { UserBasic } from '@/common/types/user.type';
-import { hashPassword } from '@/common/utils/hash';
+import { hashPassword, verifyPassword } from '@/common/utils/hash';
 import { UserRepository } from '@/core/user/user.repository';
 import { ChangePasswordInput, changePasswordSchema, UpdateUserInput, updateUserSchema } from '@/core/user/user.schema';
 export class UserService {
@@ -24,16 +24,30 @@ export class UserService {
         }
     }
 
-    static async changePassword(userId: number, passworData: ChangePasswordInput ){
+    static async updatePassword(userId: number, passworData: ChangePasswordInput ){
         try {
+            
             const parsed = changePasswordSchema.safeParse(passworData);
             if (!parsed.success) {
                 throw new Error(parsed.error.issues[0].message);
             }
-            const hashedPassword = await hashPassword(passworData.new_password);
-            const result = await UserRepository.changePassword(userId, hashedPassword);
-            return result
+
+            const {old_password, new_password} = parsed.data;
+            const oldHashedPassword = await UserRepository.getPasswordById(userId);
+            if (!oldHashedPassword) {
+                throw new Error('User password not found');
+            }
+
+            const isMatch = await verifyPassword(old_password, oldHashedPassword);
+            if(!isMatch){
+                throw new Error(`Old password is incorrect`)
+            }
             
+            const hashedPassword = await hashPassword(new_password);
+            await UserRepository.updatePasswordById(userId, hashedPassword);
+            return {
+                message: "Update password sucessfully!"
+            };
         } catch (error: any) {
             throw error;
         }
