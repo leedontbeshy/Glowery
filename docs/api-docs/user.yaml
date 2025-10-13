@@ -1,5 +1,5 @@
 paths:
-  /api/users/{id}:
+  /api/user/{id}:
     get:
       summary: Get user basic information by ID
       description: Retrieve basic information of a user by their user ID. This endpoint is public and does not require authentication.
@@ -96,3 +96,261 @@ paths:
                   summary: User does not exist
                   value:
                     error: User not found
+
+  /api/user/profile/{id}:
+    put:
+      summary: Update user profile information
+      description: Update user's profile information including full name, phone, and address. Requires authentication and user must update their own profile.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: User ID
+          example: 1
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: Bearer token (JWT from login response)
+          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  description: User's full name (letters and spaces only)
+                  example: John Doe Updated
+                phone:
+                  type: string
+                  pattern: '^(0|\+84)[0-9]{9,10}$'
+                  description: Vietnamese phone number (optional)
+                  example: "0987654321"
+                address:
+                  type: string
+                  minLength: 5
+                  maxLength: 100
+                  description: User's address
+                  example: 456 Updated Street, Ho Chi Minh City
+              additionalProperties: false
+              minProperties: 1
+            examples:
+              updateFullProfile:
+                summary: Update all profile fields
+                value:
+                  full_name: John Doe Updated
+                  phone: "0987654321"
+                  address: 456 Updated Street, Ho Chi Minh City
+              updatePartialProfile:
+                summary: Update only some fields
+                value:
+                  full_name: John Smith
+                  address: 789 New Address, Hanoi
+      responses:
+        200:
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      email:
+                        type: string
+                        format: email
+                        example: user@example.com
+                      username:
+                        type: string
+                        example: john_doe
+                      full_name:
+                        type: string
+                        example: John Doe Updated
+                      phone:
+                        type: string
+                        nullable: true
+                        example: "0987654321"
+                      address:
+                        type: string
+                        nullable: true
+                        example: 456 Updated Street, Ho Chi Minh City
+                      role:
+                        type: string
+                        enum: [user, seller, admin]
+                        example: user
+                      status:
+                        type: string
+                        enum: [active, inactive, suspended]
+                        example: active
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2025-10-13T10:30:00.000Z"
+        400:
+          description: Bad request - Validation error or invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    enum:
+                      - At least one field must be provided
+                      - Name must be at least 2 characters
+                      - Name is too long
+                      - Name can only contain letters and spaces
+                      - Invalid Vietnamese phone number format
+                      - Address must be at least 5 characters
+                      - Address is too long
+                    example: At least one field must be provided
+        401:
+          description: Unauthorized - Missing or invalid authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Token không được cung cấp
+
+  /api/user/profile/change-password/{id}:
+    put:
+      summary: Change user password
+      description: Change user's password by providing current password and new password. Requires authentication and user must change their own password.
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: User ID
+          example: 1
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: Bearer token (JWT from login response)
+          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - old_password
+                - new_password
+                - confirm_password
+              properties:
+                old_password:
+                  type: string
+                  format: password
+                  minLength: 1
+                  description: Current password
+                  example: CurrentPassword123!
+                new_password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  maxLength: 50
+                  description: New password (min 8 chars, must include uppercase, lowercase, number, and special character @$!%*?&#)
+                  example: NewSecurePassword123!
+                confirm_password:
+                  type: string
+                  format: password
+                  description: Must match the new_password field
+                  example: NewSecurePassword123!
+              additionalProperties: false
+      responses:
+        200:
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  result:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Update password sucessfully!
+        400:
+          description: Bad request - Validation error or incorrect current password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    enum:
+                      - Old password is required
+                      - Password must be at least 8 characters
+                      - Password is too long
+                      - Must contain uppercase letter
+                      - Must contain lowercase letter
+                      - Must contain number
+                      - Must contain special character (@$!%*?&#)
+                      - Passwords don't match
+                      - New password must be different from old password
+                      - Old password is incorrect
+                      - User password not found
+                    example: Old password is incorrect
+        401:
+          description: Unauthorized - Missing or invalid authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Token không được cung cấp
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login endpoint. Include as "Bearer {token}" in Authorization header.

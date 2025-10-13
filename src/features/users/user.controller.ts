@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-
 import { UserService } from './user.service';
-import { success } from 'zod';
 
 export const UserController = {
     async getUserInfo(req: Request, res: Response) {
