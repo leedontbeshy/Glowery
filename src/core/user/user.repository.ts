@@ -1,9 +1,9 @@
 import { pool } from '@/config/database';
 import { hashPassword } from '@/common/utils/hash';
+import { UpdateUserData, UserBasic } from '@/common/types/user.type';
 
 import { User } from './user.model';
 import { CreateUserInput } from './user.schema';
-import { UpdateUserData, UserBasic } from '@/common/types/user.type';
 
 export class UserRepository {
   static async findUserByEmail(email: string) {

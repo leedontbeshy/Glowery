@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 
 import { UserService } from "./user.service";
-import { success } from "zod";
-import { fa } from "zod/v4/locales";
 
 
 export const UserController = {
