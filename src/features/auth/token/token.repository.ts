@@ -25,9 +25,15 @@ export class TokenRepository {
     }
 
     //Reset Token
-    static async deleteExistedToken(email: string): Promise<void> {
+    static async deleteExistedToken(email: string, userId ?: number): Promise<void> {
         try {
-            await pool.query(`DELETE FROM reset_tokens WHERE email = $1`, [email]);
+            if(userId){
+                await pool.query(`DELETE FROM reset_tokens WHERE user_id = $1`, [userId]);
+            }
+            else{
+                await pool.query(`DELETE FROM reset_tokens WHERE email = $1`, [email]);
+            }
+            
         } catch (error) {
             throw error;
         }

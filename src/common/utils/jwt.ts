@@ -16,7 +16,7 @@ export function signToken(payload: object, expiresIn: string | number): string {
 export function verifyToken<T = any>(token: string): T {
     try {
         return jwt.verify(token, JWT_SECRET) as T;
-    } catch (error) {
+    } catch (error: any) {
         throw new Error('Invalid or expired token');
     }
 }

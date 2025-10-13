@@ -3,7 +3,7 @@ import { hashPassword } from '@/common/utils/hash';
 import { UpdateUserData, UserBasic } from '@/common/types/user.type';
 
 import { User } from './user.model';
-import { CreateUserInput } from './user.schema';
+import { ChangePasswordInput, CreateUserInput } from './user.schema';
 
 export class UserRepository {
     static async findUserByEmail(email: string) {
@@ -68,5 +68,15 @@ export class UserRepository {
         } catch (error: any) {
             throw error;
         }
+    }
+
+    static async changePassword(userId: number, password: string){
+      try {
+        const result = await pool.query(`UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2
+          RETURNING id, email, username, fullname`, [password, userId]);
+          return result.rows[0] || null;
+      } catch (error: any) {
+        throw error;
+      }
     }
 }

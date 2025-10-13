@@ -15,3 +15,5 @@ export type UserBasic = Pick<
 >;
 
 export type UpdateUserData = Partial<Pick<User, 'full_name' | 'phone' | 'address'>>;
+
+//export type passwordData = 

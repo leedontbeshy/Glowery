@@ -61,21 +61,6 @@ export const resetPasswordSchema = z
     })
     .strict();
 
-export const changePasswordSchema = z
-    .object({
-        old_password: z.string().trim().min(1, 'Old password is required'),
-        new_password: basePasswordSchema,
-        confirm_password: z.string().trim(),
-    })
-    .refine((data) => data.new_password === data.confirm_password, {
-        message: "Passwords don't match",
-        path: ['confirm_password'],
-    })
-    .refine((data) => data.old_password !== data.new_password, {
-        message: 'New password must be different from old password',
-        path: ['new_password'],
-    })
-    .strict();
 
 export const verifyEmailSchema = z
     .object({
@@ -94,6 +79,22 @@ export const updateUserSchema = z
     .refine((data) => Object.keys(data).length > 0, {
         message: 'At least one field must be provided',
     });
+
+export const changePasswordSchema = z
+    .object({
+        old_password: z.string().trim().min(1, "Old password is required"),
+        new_password: basePasswordSchema,
+        confirm_password: z.string().trim(),
+    })
+    .refine((data) => data.new_password === data.confirm_password, {
+        message: "Passwords don't match",
+        path: ["confirm_password"],
+    })
+    .refine((data) => data.old_password !== data.new_password, {
+        message: "New password must be different from old password",
+        path: ["new_password"],
+    })
+    .strict();
 
 // Types
 export type CreateUserInput = z.infer<typeof createUserInput>;
