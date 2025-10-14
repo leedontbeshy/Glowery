@@ -2,18 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { TokenRepository } from '@/features/auth/token/token.repository';
+import { UserRole } from '../constants/user.enums';
 
 // Mở rộng interface Request để thêm user
-declare global {
-    namespace Express {
-        interface Request {
-            user?: {
-                id: number;
-                email: string;
-            };
-        }
-    }
-}
 
 export const AuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -31,11 +22,16 @@ export const AuthMiddleware = async (req: Request, res: Response, next: NextFunc
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
             id: number;
             email: string;
+            role: UserRole
         };
 
-        req.user = decoded;
+        req.user = {
+            id: decoded.id,
+            email: decoded.email,
+            role: decoded.role
+        }
         next();
-    } catch (error) {
+    } catch (error: any) {
         return res.status(401).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
     }
 };

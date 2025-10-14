@@ -121,7 +121,7 @@ export class AuthService {
         if (!data) {
             throw new Error('Invalid or expired reset token');
         }
-        await UserRepository.updatePasswordByEmail(data.email, newPassword);
+        await UserRepository.updatePasswordById(data.email, newPassword);
         await TokenRepository.deleteExistedToken(data.email);
         return {
             success: true,
