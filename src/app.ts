@@ -1,13 +1,21 @@
 import express from 'express';
+import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
 
 import routes from './features'; // index.ts
 import { swaggerOptions } from './config/swagger.config';
 
+
+
+
 const app = express();
 
 app.use(express.json());
+
+if(process.env.NODE_ENV !== 'production'){
+    app.use(morgan('dev'));
+};
 
 //  Tạo Swagger spec
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
