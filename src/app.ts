@@ -5,6 +5,7 @@ import swaggerJSDoc from 'swagger-jsdoc';
 
 import routes from './features'; // index.ts
 import { swaggerOptions } from './config/swagger.config';
+import helmet from 'helmet';
 
 
 
@@ -17,6 +18,8 @@ if(process.env.NODE_ENV !== 'production'){
     app.use(morgan('dev'));
 };
 
+app.use(helmet());
+
 //  Tạo Swagger spec
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
@@ -24,6 +27,9 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //  Mount toàn bộ feature routes (vd /api/auth, /api/users)
-app.use('/api', routes);
+app.use('/api/v1', routes);
 
+app.use('/', () => {
+    console.log('Hi')
+})
 export default app;
