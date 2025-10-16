@@ -65,7 +65,10 @@ export class TokenRepository {
     static async findValidToken(token: string): Promise<any> {
         try {
             const result = await pool.query(
-                `SELECT id, expires_at FROM reset_tokens WHERE token = $1`,
+                `SELECT rt.email, rt.expires_at, u.id as user_id
+                 FROM reset_tokens rt
+                 JOIN users u ON rt.email = u.email
+                 WHERE rt.token = $1`,
                 [token],
             );
             if (result.rowCount === 0) return null;
@@ -77,7 +80,10 @@ export class TokenRepository {
                 await pool.query(`DELETE FROM reset_tokens WHERE token = $1`, [token]);
                 throw new Error('Reset token has expired');
             }
-            return { id: record.id };
+            return {
+                id: record.user_id,
+                email: record.email,
+             };
         } catch (error: any) {
             throw error;
         }

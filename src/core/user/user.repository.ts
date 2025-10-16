@@ -7,7 +7,7 @@ import { CreateUserInput } from './user.schema';
 export class UserRepository {
     static async findUserByEmail(email: string) {
         const result = await pool.query(
-            'SELECT id, email,username, password, full_name, phone, created_at FROM users WHERE email = $1',
+            'SELECT id, email, username, password, full_name, phone, address, role, status, created_at FROM users WHERE email = $1',
             [email],
         );
         return result.rows[0] || null;

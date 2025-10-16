@@ -52,7 +52,7 @@ export class AuthService {
         }
 
         //So sanh pass
-        const match = await verifyPassword(user.password, password);
+        const match = await verifyPassword(password, user.password);
         if (!match) {
             throw new Error('Wrong Password');
         }
@@ -124,7 +124,8 @@ export class AuthService {
         if (!data) {
             throw new Error('Invalid or expired reset token');
         }
-        await UserRepository.updatePasswordById(data.id, newPassword);
+        const hashedPassword = await hashPassword(newPassword);
+        await UserRepository.updatePasswordById(data.id, hashedPassword);
         await TokenRepository.deleteExistedToken(data.email);
         return {
             success: true,
