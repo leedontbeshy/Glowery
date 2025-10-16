@@ -52,7 +52,7 @@ export class AuthService {
         }
 
         //So sanh pass
-        const match = await verifyPassword(user.password, password);
+        const match = await verifyPassword(password, user.password);
         if (!match) {
             throw new Error('Wrong Password');
         }
