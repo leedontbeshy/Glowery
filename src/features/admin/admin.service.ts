@@ -1,4 +1,5 @@
-import { PaginatedUsers } from "./admin.type";
+import { PaginatedUsers } from "@/common/types/pagination.type";
+
 import { AdminRepository } from "./admin.repository";
 
 export class AdminService{

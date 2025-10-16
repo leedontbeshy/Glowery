@@ -1,8 +1,10 @@
 import { pool } from '@/config/database';
-import { UpdateUserData, UserBasic } from '@/common/types/user.type';
+import { UserBasic } from '@/features/users/user.type';
+
+import { CreateUserDTO } from '../auth/auth.dto';
 
 import { User } from './user.model';
-import { CreateUserInput } from './user.schema';
+import { UpdateUserDTO } from './user.dto';
 
 export class UserRepository {
     static async findUserByEmail(email: string) {
@@ -13,7 +15,7 @@ export class UserRepository {
         return result.rows[0] || null;
     }
 
-    static async create(data: CreateUserInput): Promise<User> {
+    static async create(data: CreateUserDTO): Promise<User> {
         const result = await pool.query(
             `INSERT INTO users (email,username, password, full_name, phone, address)
             VALUES ($1, $2, $3, $4, $5, $6)
@@ -45,7 +47,7 @@ export class UserRepository {
         return result.rows[0] || null;
     }
 
-    static async updateUser(userId: number, userData: UpdateUserData) {
+    static async updateUser(userId: number, userData: UpdateUserDTO) {
         try {
             const { full_name, address, phone } = userData;
             const result = await pool.query(

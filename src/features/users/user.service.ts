@@ -1,7 +1,10 @@
-import { UserBasic } from '@/common/types/user.type';
+import { UserBasic } from '@/features/users/user.type';
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { UserRepository } from '@/core/user/user.repository';
-import { ChangePasswordInput, changePasswordSchema, UpdateUserInput, updateUserSchema } from '@/core/user/user.schema';
+import { UserRepository } from '@/features/users/user.repository';
+import {changePasswordSchema, updateUserSchema } from '@/features/users/user.schema';
+
+import { ChangePasswordDTO, UpdateUserDTO } from './user.dto';
+
 export class UserService {
     static async getUserInfo(userId: number): Promise<UserBasic | null> {
         const result = await UserRepository.findUserById(userId);
@@ -10,7 +13,7 @@ export class UserService {
 
     static async updateUserInfo(
         userId: number,
-        userData: UpdateUserInput,
+        userData: UpdateUserDTO,
     ): Promise<UserBasic | null> {
         try {
             const parsed = updateUserSchema.safeParse(userData);
@@ -24,7 +27,7 @@ export class UserService {
         }
     };
 
-    static async updatePassword(userId: number, passworData: ChangePasswordInput ){
+    static async updatePassword(userId: number, passworData: ChangePasswordDTO ){
         try {
             
             const parsed = changePasswordSchema.safeParse(passworData);
