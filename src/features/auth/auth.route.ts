@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { AuthMiddleware } from '@/common/middlewares/auth.middleware';
+import { authMiddleware } from '@/common/middlewares/auth.middleware';
 
 import { AuthController } from './auth.controller';
 
@@ -12,7 +12,7 @@ router.post('/register', AuthController.register);
 // POST /api/auth/login
 router.post('/login', AuthController.login);
 
-router.post('/logout', AuthMiddleware, AuthController.logout);
+router.post('/logout', authMiddleware, AuthController.logout);
 
 router.post('/reset-password', AuthController.forgetPassword);
 
