@@ -6,7 +6,7 @@ export class UserService {
     static async getUserInfo(userId: number): Promise<UserBasic | null> {
         const result = await UserRepository.findUserById(userId);
         return result;
-    }
+    };
 
     static async updateUserInfo(
         userId: number,
@@ -22,7 +22,7 @@ export class UserService {
         } catch (error: any) {
             throw error;
         }
-    }
+    };
 
     static async updatePassword(userId: number, passworData: ChangePasswordInput ){
         try {
@@ -51,5 +51,5 @@ export class UserService {
         } catch (error: any) {
             throw error;
         }
-    }
+    };
 }

@@ -6,7 +6,7 @@ import { UserController } from './user.controller';
 
 const router = Router();
 
-router.get('/:id', UserController.getUserInfo);
+router.get('/:id',AuthMiddleware ,UserController.getUserInfo);
 router.put('/profile/:id', AuthMiddleware, UserController.updateUserInfo);
 router.put('/profile/change-password/:id', AuthMiddleware, UserController.updatePassword);
 export default router;

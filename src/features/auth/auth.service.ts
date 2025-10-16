@@ -6,6 +6,7 @@ import { basePasswordSchema } from '@/common/schemas/common.schema';
 
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
+import { sendResetPasswordEmail } from '@/common/utils/email';
 
 export class AuthService {
     static async register(data: RegisterInput) {
@@ -108,7 +109,9 @@ export class AuthService {
 
         await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt);
 
-        //Lúc sau phát triển lại bằng cách gửi email
+        await sendResetPasswordEmail(email, data.resetToken);
+
+        
         return data;
     }
 
@@ -121,7 +124,7 @@ export class AuthService {
         if (!data) {
             throw new Error('Invalid or expired reset token');
         }
-        await UserRepository.updatePasswordByEmail(data.email, newPassword);
+        await UserRepository.updatePasswordById(data.id, newPassword);
         await TokenRepository.deleteExistedToken(data.email);
         return {
             success: true,
