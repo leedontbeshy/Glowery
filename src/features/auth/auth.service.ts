@@ -1,15 +1,19 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
 import { signToken, getTokenExpiration } from '@/common/utils/jwt';
-import { registerSchema, loginSchema, RegisterInput, LoginInput } from '@/core/user/user.schema';
-import { UserRepository } from '@/core/user/user.repository';
+import { registerSchema, loginSchema } from '@/features/users/user.schema';
+import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
+import { sendResetPasswordEmail } from '@/common/utils/email';
 
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
-import { sendResetPasswordEmail } from '@/common/utils/email';
+import { LoginDTO, RegisterDTO } from './auth.dto';
+
+
+
 
 export class AuthService {
-    static async register(data: RegisterInput) {
+    static async register(data: RegisterDTO) {
         const parsed = registerSchema.safeParse(data);
         if (!parsed.success) {
             throw new Error(parsed.error.issues[0].message);
@@ -36,7 +40,7 @@ export class AuthService {
         return user;
     }
 
-    static async login(data: LoginInput) {
+    static async login(data: LoginDTO) {
         //Validate input
         const parsed = loginSchema.safeParse(data);
         if (!parsed.success) {

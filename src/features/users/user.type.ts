@@ -1,4 +1,4 @@
-import { User } from '@/core/user/user.model';
+import { User } from '@/features/users/user.model';
 
 export type UserBasic = Pick<
     User,
@@ -14,5 +14,5 @@ export type UserBasic = Pick<
     | 'role'
 >;
 
-export type UpdateUserData = Partial<Pick<User, 'full_name' | 'phone' | 'address'>>;
+
 

@@ -43,7 +43,7 @@ export class TokenRepository {
         try {
             await pool.query(
                 `INSERT INTO reset_tokens (email, token, expires_at, created_at)
-       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+                VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
                 [email, token, expiresAt],
             );
         } catch (error) {
