@@ -19,7 +19,7 @@ export const UserController = {
     },
     async updateUserInfo(req: Request, res: Response): Promise<any> {
         try {
-            const userId = Number(req.params.id);
+            const userId = req.user.id;
             const result = await UserService.updateUserInfo(userId, req.body);
 
             return res.status(200).json({
@@ -36,7 +36,8 @@ export const UserController = {
 
     async updatePassword(req: Request, res: Response):Promise<any>{
         try {
-            const result = await UserService.updatePassword(Number(req.params.id),req.body);
+            const userId = req.user.id; // Use authenticated user's ID from token
+            const result = await UserService.updatePassword(userId, req.body);
             return res.status(200).json({
                 success: true,
                 result,
