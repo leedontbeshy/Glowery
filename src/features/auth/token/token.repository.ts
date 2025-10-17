@@ -1,26 +1,36 @@
 import { pool } from '@/config/database';
+import { handleDatabaseError } from '@/common/errors/databaseErrorHandler';
+import { BadRequestError } from '@/common/errors/ApiError';
 
 export class TokenRepository {
     static async addToBlackList(token: string, user_id: number, expires_at: Date) {
-        await pool.query(
-            `INSERT INTO blacklisted_tokens (token, user_id, expires_at)
-            VALUES ($1, $2, $3)`,
-            [token, user_id, expires_at],
-        );
+        try {
+            await pool.query(
+                `INSERT INTO blacklisted_tokens (token, user_id, expires_at)
+                VALUES ($1, $2, $3)`,
+                [token, user_id, expires_at],
+            );
+        } catch (error) {
+            handleDatabaseError(error, 'addToBlackList');
+        }
     }
 
     static async isBlacklisted(token: string): Promise<boolean> {
-        const result = await pool.query('SELECT 1 FROM blacklisted_tokens WHERE token = $1', [
-            token,
-        ]);
-        return (result.rowCount ?? 0) > 0;
+        try {
+            const result = await pool.query('SELECT 1 FROM blacklisted_tokens WHERE token = $1', [
+                token,
+            ]);
+            return (result.rowCount ?? 0) > 0;
+        } catch (error) {
+            handleDatabaseError(error, 'isBlacklisted');
+        }
     }
 
     static async cleanupExpired() {
         try {
             await pool.query('DELETE FROM blacklisted_tokens WHERE expired_at < NOW()');
         } catch (error) {
-            throw error;
+            handleDatabaseError(error, 'cleanupExpired');
         }
     }
 
@@ -33,9 +43,8 @@ export class TokenRepository {
             else{
                 await pool.query(`DELETE FROM reset_tokens WHERE email = $1`, [email]);
             }
-            
         } catch (error) {
-            throw error;
+            handleDatabaseError(error, 'deleteExistedToken');
         }
     }
 
@@ -47,7 +56,7 @@ export class TokenRepository {
                 [email, token, expiresAt],
             );
         } catch (error) {
-            throw new Error('Failed to create reset token: ' + (error as Error).message);
+            handleDatabaseError(error, 'createResetToken');
         }
     }
 
@@ -58,7 +67,7 @@ export class TokenRepository {
             ]);
             return (result?.rowCount ?? 0) > 0;
         } catch (error) {
-            throw new Error('Failed to check reset token: ' + (error as Error).message);
+            handleDatabaseError(error, 'checkResetToken');
         }
     }
 
@@ -78,14 +87,18 @@ export class TokenRepository {
 
             if (new Date(record.expires_at) < now) {
                 await pool.query(`DELETE FROM reset_tokens WHERE token = $1`, [token]);
-                throw new Error('Reset token has expired');
+                throw new BadRequestError('Reset token has expired');
             }
             return {
                 id: record.user_id,
                 email: record.email,
              };
-        } catch (error: any) {
-            throw error;
+        } catch (error) {
+            // Re-throw if it's already an ApiError (like BadRequestError)
+            if (error instanceof BadRequestError) {
+                throw error;
+            }
+            handleDatabaseError(error, 'findValidToken');
         }
     }
 }
