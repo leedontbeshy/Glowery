@@ -26,3 +26,21 @@ export class NotFoundError extends ApiError {
         super(404, message);
     }
 }
+
+export class ConflictError extends ApiError {
+    constructor(message = 'Resource already exists') {
+        super(409, message);
+    }
+}
+
+export class InternalServerError extends ApiError {
+    constructor(message = 'Internal Server Error') {
+        super(500, message);
+    }
+}
+
+export class DatabaseError extends ApiError {
+    constructor(message = 'Database operation failed') {
+        super(500, message);
+    }
+}
