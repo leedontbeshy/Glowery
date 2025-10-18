@@ -74,6 +74,19 @@ CREATE TABLE blacklisted_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    is_revoked BOOLEAN DEFAULT FALSE,
+    revoked_at TIMESTAMP, -- IPv4 or IPv6
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
 -- ============================================================================
 -- 2. PRODUCTS
 -- ============================================================================
@@ -269,6 +282,12 @@ CREATE INDEX idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NULL;
 -- Tokens
 CREATE INDEX idx_reset_tokens_token ON reset_tokens(token);
 CREATE INDEX idx_reset_tokens_expires ON reset_tokens(expires_at);
+
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_expires ON refresh_tokens(expires_at);
+CREATE INDEX idx_refresh_tokens_revoked ON refresh_tokens(is_revoked) WHERE is_revoked = FALSE;
+
 CREATE INDEX idx_blacklist_token ON blacklisted_tokens(token);
 CREATE INDEX idx_blacklist_expires ON blacklisted_tokens(expires_at);
 

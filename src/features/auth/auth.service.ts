@@ -1,5 +1,5 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { signToken, getTokenExpiration } from '@/common/utils/jwt';
+import { signAccessToken,signRefreshToken, getTokenExpiration } from '@/common/utils/jwt';
 import { registerSchema, loginSchema } from '@/features/users/user.schema';
 import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
@@ -63,18 +63,28 @@ export class AuthService {
 
         await UserRepository.updateLastLogin(user.id);
 
-        const token = signToken(
+        const accessToken = signAccessToken(
             {
                 id: user.id,
                 email: user.email,
                 role: user.role,
             },
-            process.env.JWT_EXPIRES_IN as string,
+            process.env.JWT_ACCESS_EXPIRES_IN as string,
+        );
+
+        const refreshToken = signRefreshToken(
+            {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+            },
+            process.env.JWT_REFRESH_EXPIRES_IN as string
         );
 
         return {
             message: 'Login Sucessfully',
-            token,
+            accessToken,
+            refreshToken,
             user: {
                 id: user.id,
                 username: user.username,
