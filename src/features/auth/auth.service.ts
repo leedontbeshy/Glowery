@@ -1,5 +1,5 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { signAccessToken,signRefreshToken, getTokenExpiration } from '@/common/utils/jwt';
+import { signAccessToken,signRefreshToken } from '@/common/utils/jwt';
 import { registerSchema, loginSchema } from '@/features/users/user.schema';
 import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
@@ -8,9 +8,6 @@ import { sendResetPasswordEmail } from '@/common/utils/email';
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
 import { LoginDTO, RegisterDTO } from './auth.dto';
-
-
-
 
 export class AuthService {
     static async register(data: RegisterDTO) {
@@ -97,12 +94,8 @@ export class AuthService {
         };
     }
 
-    static async logout(token: string, user_id: number) {
-        const expiresAt = getTokenExpiration(token);
-        if (!expiresAt) {
-            throw new Error('Invalid token or mising expiration');
-        }
-        await TokenRepository.addToBlackList(token, user_id, expiresAt);
+    static async logout(accesToken: string | undefined,refreshToken: string | undefined, user_id: number) {
+        await TokenRepository.addToBlackList(accesToken,refreshToken, user_id);
     }
 
     static async forgotPassword(email: string): Promise<any> {

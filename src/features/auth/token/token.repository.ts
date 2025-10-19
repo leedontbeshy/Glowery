@@ -3,13 +3,17 @@ import { handleDatabaseError } from '@/common/errors/databaseErrorHandler';
 import { BadRequestError } from '@/common/errors/ApiError';
 
 export class TokenRepository {
-    static async addToBlackList(token: string, user_id: number, expires_at: Date) {
+    static async addToBlackList(accessToken: string | undefined,refreshToken: string | undefined, user_id: number): Promise<boolean> {
         try {
-            await pool.query(
-                `INSERT INTO blacklisted_tokens (token, user_id, expires_at)
+            const result = await pool.query(
+                `INSERT INTO blacklisted_tokens (token, user_id)
                 VALUES ($1, $2, $3)`,
-                [token, user_id, expires_at],
+                [accessToken,refreshToken, user_id],
             );
+            if((result.rowCount ?? 0) > 0){
+                return true;
+            }
+            else{ return false}
         } catch (error) {
             handleDatabaseError(error, 'addToBlackList');
         }
@@ -17,9 +21,9 @@ export class TokenRepository {
 
     static async isBlacklisted(token: string): Promise<boolean> {
         try {
-            const result = await pool.query('SELECT 1 FROM blacklisted_tokens WHERE token = $1', [
-                token,
-            ]);
+            const result = await pool.query('SELECT 1 FROM blacklisted_tokens WHERE access_token = $1', 
+                [token],
+            );
             return (result.rowCount ?? 0) > 0;
         } catch (error) {
             handleDatabaseError(error, 'isBlacklisted');

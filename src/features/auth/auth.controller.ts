@@ -28,16 +28,17 @@ export const AuthController = {
 
     async logout(req: Request, res: Response) {
         try {
-            const token = req.headers.authorization?.replace('Bearer ', '');
+            const accessToken = req.headers.authorization?.replace('Bearer ', '');
+            const {refreshToken} = req.body;
             const userId = req.user?.id;
 
-            if (!token) {
+            if (!accessToken || !refreshToken) {
                 return res.status(400).json({
-                    message: 'Invalid Token',
+                    message: 'Missing Access Token or Refresh Token',
                 });
             }
 
-            await AuthService.logout(token, userId!);
+            await AuthService.logout(accessToken,refreshToken, userId!);
             return res.status(200).json({
                 message: 'Logout Successfully',
             });

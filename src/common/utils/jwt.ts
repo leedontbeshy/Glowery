@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { JwtPayLoad } from '../types/jwt.type';
 dotenv.config();
 
-const JWT_ACCESS_SECRET = process.env.JWT_SECRET as Secret;
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as Secret;
 const JWT_REFRESH_SECRET=process.env.JWT_REFRESH_SECRET as Secret;
 
 if (!JWT_ACCESS_SECRET) {
