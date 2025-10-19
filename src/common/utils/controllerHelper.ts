@@ -4,7 +4,7 @@ import { ApiError } from '../errors/ApiError';
 import { handleDatabaseError } from '../errors/databaseErrorHandler';
 
 export function handleControllerError(error: any, res: Response, context?: string) {
-    // 1. Xử lý ApiError (custom errors từ Service)
+    // 1.  ApiError (custom errors from Service)
     if (error instanceof ApiError) {
         return res.status(error.statusCode).json({
             success: false,
@@ -12,7 +12,7 @@ export function handleControllerError(error: any, res: Response, context?: strin
         });
     }
 
-    // 2. Xử lý Database Error
+    // 2. Database Error
     if (error.code) {
         try {
             handleDatabaseError(error, context);
@@ -24,7 +24,7 @@ export function handleControllerError(error: any, res: Response, context?: strin
         }
     }
 
-    // 3. Lỗi không xác định
+    // 3. Unexpected error
     console.error(`Unexpected error${context ? ` in ${context}` : ''}:`, error);
     return res.status(500).json({
         success: false,
