@@ -9,10 +9,10 @@ import { getTokenExpiration } from '@/common/utils/jwt';
 export class TokenRepository {
     //login
     static async addRefreshTokenToDB(refreshToken:string, userId: number):Promise<void>{
-        const expiresAt = dayjs().add(14, 'day').toDate;
+        const expiresAt = dayjs().add(14, 'day').toDate();
         await pool.query(`
             INSERT INTO refresh_tokens (user_id, token, expires_at, is_revoked, created_at)
-            VALUES($1, $2,$3, $4, CURRENT_TIMESTAMP)
+            VALUES($1, $2,$3,$4, CURRENT_TIMESTAMP)
             `,[userId, refreshToken,expiresAt,false]);
     }
 
@@ -42,7 +42,7 @@ export class TokenRepository {
 
     static async isBlacklisted(token: string): Promise<boolean> {
         const result = await pool.query(
-            'SELECT 1 FROM blacklisted_tokens WHERE token = $1',
+            'SELECT 1 FROM blacklisted_tokens WHERE acces_token = $1',
             [token],
         );
         return (result.rowCount ?? 0) > 0;
