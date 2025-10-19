@@ -42,6 +42,10 @@ public/uploads/
 
 txt/*
 
+#Docs guide
 docs/flow/
+docs/Branching_Rules.md
+docs/Commit-Guide.md
+
 
 .claude
