@@ -1,5 +1,5 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { signToken, getTokenExpiration } from '@/common/utils/jwt';
+import { signAccessToken,signRefreshToken } from '@/common/utils/jwt';
 import { registerSchema, loginSchema } from '@/features/users/user.schema';
 import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
@@ -8,9 +8,6 @@ import { sendResetPasswordEmail } from '@/common/utils/email';
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
 import { LoginDTO, RegisterDTO } from './auth.dto';
-
-
-
 
 export class AuthService {
     static async register(data: RegisterDTO) {
@@ -63,18 +60,29 @@ export class AuthService {
 
         await UserRepository.updateLastLogin(user.id);
 
-        const token = signToken(
+        const accessToken = signAccessToken(
             {
                 id: user.id,
                 email: user.email,
                 role: user.role,
             },
-            process.env.JWT_EXPIRES_IN as string,
+            process.env.JWT_ACCESS_EXPIRES_IN as string,
         );
 
+        const refreshToken = signRefreshToken(
+            {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+            },
+            process.env.JWT_REFRESH_EXPIRES_IN as string
+        );
+
+        await TokenRepository.addRefreshTokenToDB(refreshToken, user.id);
         return {
             message: 'Login Sucessfully',
-            token,
+            accessToken,
+            refreshToken,
             user: {
                 id: user.id,
                 username: user.username,
@@ -87,13 +95,9 @@ export class AuthService {
         };
     }
 
-    static async logout(token: string, user_id: number) {
-        const expiresAt = getTokenExpiration(token);
-        if (!expiresAt) {
-            throw new Error('Invalid token or mising expiration');
-        }
-        await TokenRepository.addToBlackList(token, user_id, expiresAt);
-    }
+    static async logout(accesToken: string,refreshToken: string, user_id: number) {
+        await TokenRepository.addToBlackList(accesToken,refreshToken, user_id);
+    };
 
     static async forgotPassword(email: string): Promise<any> {
         const user = await UserRepository.findUserByEmail(email);

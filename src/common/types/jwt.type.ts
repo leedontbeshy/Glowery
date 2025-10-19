@@ -8,3 +8,7 @@ export interface JwtPayLoad {
     iat?: number,
     exp?: number,
 }
+
+
+export type AuthenticatedUser = Pick<JwtPayLoad, 
+'id' | 'email' | 'role'>;

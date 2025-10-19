@@ -192,83 +192,72 @@ API Documentation: `http://localhost:8000/api-docs`
 ## 📁 Folder Structure
 
 ```
-Glowery/
-│
-├── database/                    # Database scripts
-│   ├── glowery_db_schema.sql   # Database schema
-│   └── seedData.sql            # Seed data
-│
-├── docs/                        # Documentation
-│   ├── APIs-docs.md            # API documentation
-│   ├── Branching_Rules.md      # Git branching rules
-│   ├── Commit-Guide.md         # Commit message guide
-│   ├── api-docs/               # OpenAPI/Swagger specs
-│   │   └── auth.yaml
-│   └── flow/                   # Business flow diagrams
-│       ├── Register_Login_Logout.md
-│       └── ResetPassword.flow.md
-│
-├── src/                         # Source code
-│   ├── app.ts                  # Express app setup
-│   ├── server.ts               # Server entry point
-│   │
-│   ├── common/                 # Shared utilities
-│   │   ├── constants/          # Constants & enums
-│   │   │   ├── error-codes.ts
-│   │   │   ├── http-status.ts
-│   │   │   └── user.enums.ts
-│   │   ├── errors/             # Custom error classes
-│   │   │   ├── ApiError.ts
-│   │   │   ├── BadRequestError.ts
-│   │   │   └── UnauthorizedError.ts
-│   │   ├── middlewares/        # Global middlewares
-│   │   │   ├── auth.middleware.ts
-│   │   │   ├── error.middleware.ts
-│   │   │   └── validate.middleware.ts
-│   │   ├── schemas/            # Shared Zod schemas
-│   │   │   └── common.schema.ts
-│   │   ├── types/              # TypeScript types/interfaces
-│   │   └── utils/              # Utility functions
-│   │       ├── hash.ts
-│   │       ├── jwt.ts
-│   │       └── logger.ts
-│   │
-│   ├── config/                 # Configuration files
-│   │   ├── database.ts         # Database connection
-│   │   └── swagger.config.ts   # Swagger setup
-│   │
-│   ├── core/                   # Domain models (Data layer)
-│   │   ├── user/
-│   │   │   ├── user.model.ts
-│   │   │   ├── user.repository.ts
-│   │   │   └── user.schema.ts
-│   │   ├── order/              # (Coming soon)
-│   │   └── product/            # (Coming soon)
-│   │
-│   └── features/               # Feature modules (API layer)
-│       ├── index.ts            # Routes aggregator
-│       ├── auth/               # Authentication feature
-│       │   ├── auth.controller.ts
-│       │   ├── auth.route.ts
-│       │   ├── auth.service.ts
-│       │   └── token/
-│       │       ├── token.repository.ts
-│       │       └── token.service.ts
-│       ├── users/              # User management
-│       │   ├── user.controller.ts
-│       │   ├── user.route.ts
-│       │   └── user.service.ts
-│       ├── orders/             # (Coming soon)
-│       └── products/           # (Coming soon)
-│
-├── test/                       # Tests
-│   └── db.test.ts
-│
-├── .env.example                # Environment variables example
-├── .gitignore
-├── package.json
-├── tsconfig.json               # TypeScript config
-└── README.md
+src
+ ┣ common
+ ┃ ┣ constants
+ ┃ ┃ ┣ error-codes.ts
+ ┃ ┃ ┣ http-status.ts
+ ┃ ┃ ┗ user.enums.ts
+ ┃ ┣ errors
+ ┃ ┃ ┣ ApiError.ts
+ ┃ ┃ ┣ BadRequestError.ts
+ ┃ ┃ ┣ databaseErrorHandler.ts
+ ┃ ┃ ┗ UnauthorizedError.ts
+ ┃ ┣ middlewares
+ ┃ ┃ ┣ auth.middleware.ts
+ ┃ ┃ ┣ authorize.middleware.ts
+ ┃ ┃ ┣ authorizeResourceOwner.middleware.ts
+ ┃ ┃ ┣ error.middleware.ts
+ ┃ ┃ ┗ validate.middleware.ts
+ ┃ ┣ schemas
+ ┃ ┃ ┗ common.schema.ts
+ ┃ ┣ types
+ ┃ ┃ ┣ express.d.ts
+ ┃ ┃ ┣ jwt.type.ts
+ ┃ ┃ ┗ pagination.type.ts
+ ┃ ┗ utils
+ ┃ ┃ ┣ email.ts
+ ┃ ┃ ┣ hash.ts
+ ┃ ┃ ┣ jwt.ts
+ ┃ ┃ ┗ logger.ts
+ ┣ config
+ ┃ ┣ database.ts
+ ┃ ┗ swagger.config.ts
+ ┣ features
+ ┃ ┣ admin
+ ┃ ┃ ┣ admin.controller.ts
+ ┃ ┃ ┣ admin.repository.ts
+ ┃ ┃ ┣ admin.route.ts
+ ┃ ┃ ┣ admin.service.ts
+ ┃ ┃ ┗ admin.type.ts
+ ┃ ┣ auth
+ ┃ ┃ ┣ token
+ ┃ ┃ ┃ ┣ token.repository.ts
+ ┃ ┃ ┃ ┗ token.service.ts
+ ┃ ┃ ┣ auth.controller.ts
+ ┃ ┃ ┣ auth.dto.ts
+ ┃ ┃ ┣ auth.route.ts
+ ┃ ┃ ┣ auth.schema.ts
+ ┃ ┃ ┗ auth.service.ts
+ ┃ ┣ orders
+ ┃ ┣ products
+ ┃ ┣ search
+ ┃ ┃ ┣ search.repository.ts
+ ┃ ┃ ┣ search.service.ts
+ ┃ ┃ ┗ search.type.ts
+ ┃ ┣ users
+ ┃ ┃ ┣ user.controller.ts
+ ┃ ┃ ┣ user.dto.ts
+ ┃ ┃ ┣ user.model.ts
+ ┃ ┃ ┣ user.repository.ts
+ ┃ ┃ ┣ user.route.ts
+ ┃ ┃ ┣ user.schema.ts
+ ┃ ┃ ┣ user.service.ts
+ ┃ ┃ ┗ user.type.ts
+ ┃ ┗ index.ts
+ ┣ app.ts
+ ┗ server.ts
+
 ```
 
 ---
@@ -663,7 +652,7 @@ We welcome all contributions! Please follow these steps:
 ```bash
 # Fork repo from GitHub UI
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/Glowery.git
+git clone https://github.com/leedontbeshy/Glowery.git
 ```
 
 ### 2. Create a New Branch
@@ -714,7 +703,6 @@ This project is licensed under the **ISC License**.
 
 ## 🙏 Acknowledgments
 
-Thanks to the technologies and libraries used in this project:
 
 - [Node.js](https://nodejs.org/)
 - [Express.js](https://expressjs.com/)
