@@ -23,7 +23,7 @@ export class TokenRepository {
         const result1 = await pool.query(
             `INSERT INTO blacklisted_tokens (access_token, user_id, reason, expires_at)
                      VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (token) DO NOTHING`,
+                     ON CONFLICT (access_token) DO NOTHING`,
             [accessToken, user_id, 'logout', accessExp],
         );
         insertedCount += (result1.rowCount ?? 0);
@@ -33,7 +33,7 @@ export class TokenRepository {
         const result2 = await pool.query(
             `INSERT INTO blacklisted_tokens (refresh_token, user_id, reason, expires_at)
                      VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (token) DO NOTHING`,
+                     ON CONFLICT (refresh_token) DO NOTHING`,
             [refreshToken, user_id, 'logout', refreshExp],
         );
         insertedCount += (result2.rowCount ?? 0);
@@ -42,7 +42,7 @@ export class TokenRepository {
 
     static async isBlacklisted(token: string): Promise<boolean> {
         const result = await pool.query(
-            'SELECT 1 FROM blacklisted_tokens WHERE acces_token = $1',
+            'SELECT 1 FROM blacklisted_tokens WHERE access_token = $1 OR refresh_token = $1',
             [token],
         );
         return (result.rowCount ?? 0) > 0;

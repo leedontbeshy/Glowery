@@ -19,7 +19,7 @@ export const authMiddleware = async (
             res.status(401).json({ message: 'Token not provided' });
             return;
         }
-        // Kiểm tra token có trong blacklist không
+       
         const isBlacklisted = await TokenRepository.isBlacklisted(accessToken);
         if (isBlacklisted) {
             res.status(401).json({ message: 'The token has been disabled' });
