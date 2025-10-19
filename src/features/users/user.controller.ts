@@ -1,53 +1,76 @@
 import { Request, Response } from 'express';
 
+import { handleControllerError } from '@/common/utils/controllerHelper';
+
 import { UserService } from './user.service';
 
-export const UserController = {
+
+
+export class UserController {
     async getUserInfo(req: Request, res: Response) {
         try {
-            const userId = Number(req.params.id);
-            const result = await UserService.getUserInfo(userId);
+            const userId = req.user?.id;
+            
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized',
+                });
+            }
+
+            const user = await UserService.getUserInfo(userId);
+            
             return res.status(200).json({
                 success: true,
-                result,
+                data: user,
             });
         } catch (error: any) {
-            return res.status(400).json({
-                error: error.message,
-            });
-        }
-    },
-    async updateUserInfo(req: Request, res: Response): Promise<any> {
-        try {
-            const userId = req.user.id;
-            const result = await UserService.updateUserInfo(userId, req.body);
-
-            return res.status(200).json({
-                success: true,
-                result,
-            });
-        } catch (error: any) {
-            return res.status(400).json({
-                success: false,
-                message: error.message,
-            });
-        }
-    },
-
-    async updatePassword(req: Request, res: Response):Promise<any>{
-        try {
-            const userId = req.user.id; // Use authenticated user's ID from token
-            const result = await UserService.updatePassword(userId, req.body);
-            return res.status(200).json({
-                success: true,
-                result,
-            })
-
-        } catch (error: any) {
-            return res.status(400).json({
-                success: false,
-                message: error.message,
-            });
+            return handleControllerError(error, res, 'getUserInfo');
         }
     }
-};
+
+    async updateUserInfo(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized',
+                });
+            }
+
+            const user = await UserService.updateUserInfo(userId, req.body);
+            
+            return res.status(200).json({
+                success: true,
+                data: user,
+                message: 'User updated successfully',
+            });
+        } catch (error: any) {
+            return handleControllerError(error, res, 'updateUserInfo');
+        }
+    }
+
+    async updatePassword(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized',
+                });
+            }
+
+            const result = await UserService.updatePassword(userId, req.body);
+            
+            return res.status(200).json({
+                success: true,
+                message: result.message,
+            });
+        } catch (error: any) {
+            return handleControllerError(error, res, 'updatePassword');
+        }
+    }
+}
