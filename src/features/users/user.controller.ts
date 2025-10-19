@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 
 
 
-export class UserController {
+export const UserController = {
     async getUserInfo(req: Request, res: Response) {
         try {
             const userId = req.user?.id;
@@ -27,7 +27,7 @@ export class UserController {
         } catch (error: any) {
             return handleControllerError(error, res, 'getUserInfo');
         }
-    }
+    },
 
     async updateUserInfo(req: Request, res: Response) {
         try {
@@ -50,7 +50,7 @@ export class UserController {
         } catch (error: any) {
             return handleControllerError(error, res, 'updateUserInfo');
         }
-    }
+    },
 
     async updatePassword(req: Request, res: Response) {
         try {

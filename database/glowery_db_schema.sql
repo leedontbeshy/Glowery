@@ -67,7 +67,8 @@ CREATE TABLE reset_tokens (
 -- Token blacklist cho logout/security
 CREATE TABLE blacklisted_tokens (
     id SERIAL PRIMARY KEY,
-    token TEXT UNIQUE NOT NULL,
+    access_token TEXT UNIQUE NOT NULL,
+    refresh_token TEXT UNIQUE NOT NULL,
     user_id INTEGER REFERENCES users(id),
     reason VARCHAR(100), -- 'logout', 'expired', 'security'
     expires_at TIMESTAMP NOT NULL,

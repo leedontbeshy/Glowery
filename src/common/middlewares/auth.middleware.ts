@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { TokenRepository } from '@/features/auth/token/token.repository';
 import { verifyAccessToken } from '@/common/utils/jwt';
+
 import { JwtPayLoad } from '../types/jwt.type';
 
 
@@ -12,20 +13,20 @@ export const authMiddleware = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const token = req.headers.authorization?.replace('Bearer ', '');
+        const accessToken = req.headers.authorization?.replace('Bearer ', '');
 
-        if (!token) {
+        if (!accessToken) {
             res.status(401).json({ message: 'Token not provided' });
             return;
         }
-        // Kiểm tra token có trong blacklist không
-        const isBlacklisted = await TokenRepository.isBlacklisted(token);
+       
+        const isBlacklisted = await TokenRepository.isBlacklisted(accessToken);
         if (isBlacklisted) {
             res.status(401).json({ message: 'The token has been disabled' });
             return;
         }
         // Verify access token using configured access secret
-        const decoded = verifyAccessToken(token) as JwtPayLoad;
+        const decoded = verifyAccessToken(accessToken) as JwtPayLoad;
 
         req.user = {
             id: decoded.id,
