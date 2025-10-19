@@ -29,7 +29,7 @@ export const AuthController = {
     async logout(req: Request, res: Response) {
         try {
             const accessToken = req.headers.authorization?.replace('Bearer ', '');
-            const {refreshToken} = req.body;
+            const { refreshToken } = req.body;
             const userId = req.user?.id;
 
             if (!accessToken || !refreshToken) {

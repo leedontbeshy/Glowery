@@ -5,11 +5,14 @@ import { JwtPayLoad } from '../types/jwt.type';
 dotenv.config();
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as Secret;
-const JWT_REFRESH_SECRET=process.env.JWT_REFRESH_SECRET as Secret;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as Secret;
 
 if (!JWT_ACCESS_SECRET) {
-    throw new Error('Missing JWT_SECRET environment variable');
-};
+    throw new Error('Missing JWT_ACCESS_SECRET environment variable');
+}
+if (!JWT_REFRESH_SECRET) {
+    throw new Error('Missing JWT_REFRESH_SECRET environment variable');
+}
 
 export function signAccessToken(payload: JwtPayLoad, expiresIn: string | number): string {
     const options = { expiresIn } as SignOptions;

@@ -78,6 +78,7 @@ export class AuthService {
             process.env.JWT_REFRESH_EXPIRES_IN as string
         );
 
+        await TokenRepository.addRefreshTokenToDB(refreshToken, user.id);
         return {
             message: 'Login Sucessfully',
             accessToken,
@@ -94,9 +95,9 @@ export class AuthService {
         };
     }
 
-    static async logout(accesToken: string | undefined,refreshToken: string | undefined, user_id: number) {
+    static async logout(accesToken: string,refreshToken: string, user_id: number) {
         await TokenRepository.addToBlackList(accesToken,refreshToken, user_id);
-    }
+    };
 
     static async forgotPassword(email: string): Promise<any> {
         const user = await UserRepository.findUserByEmail(email);
