@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model blacklisted_tokens {
+  id            Int       @id @default(autoincrement())
+  access_token  String    @unique(map: "blacklisted_tokens_token_key")
+  user_id       Int?
+  reason        String?   @db.VarChar(100)
+  expires_at    DateTime? @db.Timestamp(6)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  refresh_token String?   @unique
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_blacklist_expires")
+  @@index([access_token], map: "idx_blacklist_token")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model cart_items {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  quantity   Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, product_id])
+  @@index([user_id], map: "idx_cart_user")
+}
+
+model categories {
+  id               Int          @id @default(autoincrement())
+  name             String       @db.VarChar(100)
+  slug             String       @unique @db.VarChar(100)
+  parent_id        Int?
+  is_active        Boolean?     @default(true)
+  created_at       DateTime?    @default(now()) @db.Timestamp(6)
+  categories       categories?  @relation("categoriesTocategories", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_categories categories[] @relation("categoriesTocategories")
+  products         products[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model coupons {
+  id             Int           @id @default(autoincrement())
+  code           String        @unique @db.VarChar(50)
+  discount_type  discount_type
+  discount_value Decimal       @db.Decimal(10, 2)
+  min_order      Decimal?      @default(0) @db.Decimal(10, 2)
+  max_uses       Int?
+  used_count     Int?          @default(0)
+  start_date     DateTime      @db.Timestamp(6)
+  end_date       DateTime      @db.Timestamp(6)
+  is_active      Boolean?      @default(true)
+}
+
+model notifications {
+  id         Int               @id @default(autoincrement())
+  user_id    Int
+  title      String            @db.VarChar(200)
+  message    String
+  type       notification_type
+  is_read    Boolean?          @default(false)
+  created_at DateTime?         @default(now()) @db.Timestamp(6)
+  users      users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, is_read], map: "idx_notif_user_unread")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model order_items {
+  id           Int       @id @default(autoincrement())
+  order_id     Int
+  product_id   Int
+  product_name String    @db.VarChar(200)
+  quantity     Int
+  price        Decimal   @db.Decimal(10, 2)
+  subtotal     Decimal   @db.Decimal(10, 2)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  orders       orders    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  products     products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model orders {
+  id               Int            @id @default(autoincrement())
+  order_number     String         @unique @db.VarChar(50)
+  user_id          Int
+  shipping_name    String         @db.VarChar(100)
+  shipping_phone   String         @db.VarChar(15)
+  shipping_address String
+  subtotal         Decimal        @db.Decimal(10, 2)
+  shipping_fee     Decimal?       @default(0) @db.Decimal(10, 2)
+  discount         Decimal?       @default(0) @db.Decimal(10, 2)
+  total            Decimal        @db.Decimal(10, 2)
+  payment_method   payment_method
+  status           order_status?  @default(pending)
+  note             String?
+  created_at       DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?      @default(now()) @db.Timestamp(6)
+  deleted_at       DateTime?      @db.Timestamp(6)
+  order_items      order_items[]
+  users            users          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payments         payments[]
+  reviews          reviews[]
+
+  @@index([created_at], map: "idx_orders_created")
+  @@index([status], map: "idx_orders_status")
+  @@index([user_id], map: "idx_orders_user")
+}
+
+model payments {
+  id               Int             @id @default(autoincrement())
+  payment_number   String          @unique @db.VarChar(50)
+  order_id         Int
+  amount           Decimal         @db.Decimal(10, 2)
+  currency         String?         @default("VND") @db.VarChar(3)
+  payment_method   payment_method
+  payment_gateway  String?         @db.VarChar(50)
+  status           payment_status? @default(pending)
+  transaction_id   String?         @db.VarChar(100)
+  gateway_response Json?
+  paid_at          DateTime?       @db.Timestamp(6)
+  failed_at        DateTime?       @db.Timestamp(6)
+  failure_reason   String?
+  created_at       DateTime?       @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?       @default(now()) @db.Timestamp(6)
+  orders           orders          @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at], map: "idx_payments_created")
+  @@index([order_id], map: "idx_payments_order")
+  @@index([status], map: "idx_payments_status")
+  @@index([transaction_id], map: "idx_payments_transaction")
+}
+
+model product_images {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  image_url  String   @db.VarChar(255)
+  is_primary Boolean? @default(false)
+  sort_order Int?     @default(0)
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model products {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(200)
+  slug           String           @unique @db.VarChar(200)
+  description    String?
+  price          Decimal          @db.Decimal(10, 2)
+  discount_price Decimal?         @db.Decimal(10, 2)
+  quantity       Int?             @default(0)
+  sku            String?          @unique @db.VarChar(100)
+  category_id    Int?
+  seller_id      Int?
+  status         product_status?  @default(active)
+  view_count     Int?             @default(0)
+  sold_count     Int?             @default(0)
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?        @default(now()) @db.Timestamp(6)
+  deleted_at     DateTime?        @db.Timestamp(6)
+  cart_items     cart_items[]
+  order_items    order_items[]
+  product_images product_images[]
+  categories     categories?      @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users          users?           @relation(fields: [seller_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reviews        reviews[]
+  wishlists      wishlists[]
+
+  @@index([category_id], map: "idx_products_category")
+  @@index([slug], map: "idx_products_slug")
+  @@index([status], map: "idx_products_status")
+}
+
+model refresh_tokens {
+  id           Int       @id @unique @default(autoincrement())
+  user_id      Int
+  token        String    @unique
+  expires_at   DateTime  @db.Timestamp(6)
+  is_revoked   Boolean?  @default(false)
+  revoked_at   DateTime? @db.Timestamp(6)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  last_used_at DateTime? @default(now()) @db.Timestamp(6)
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_refresh_tokens_expires")
+  @@index([token], map: "idx_refresh_tokens_token")
+  @@index([user_id], map: "idx_refresh_tokens_user")
+}
+
+model reset_tokens {
+  id         Int       @id @default(autoincrement())
+  email      String    @db.VarChar(255)
+  token      String    @unique @db.VarChar(255)
+  expires_at DateTime  @db.Timestamp(6)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([expires_at], map: "idx_reset_tokens_expires")
+  @@index([token], map: "idx_reset_tokens_token")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model reviews {
+  id            Int       @id @default(autoincrement())
+  product_id    Int
+  user_id       Int
+  order_id      Int?
+  rating        Int
+  comment       String?
+  is_approved   Boolean?  @default(true)
+  helpful_count Int?      @default(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at    DateTime? @db.Timestamp(6)
+  orders        orders?   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  products      products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([product_id, user_id, order_id])
+  @@index([is_approved], map: "idx_reviews_approved")
+  @@index([product_id], map: "idx_reviews_product")
+}
+
+model users {
+  id                 Int                  @id @default(autoincrement())
+  email              String               @unique @db.VarChar(100)
+  password           String               @db.VarChar(255)
+  full_name          String               @db.VarChar(100)
+  phone              String?              @db.VarChar(15)
+  avatar             String?              @db.VarChar(255)
+  role               user_role?           @default(user)
+  status             user_status?         @default(active)
+  email_verified     Boolean?             @default(false)
+  last_login_at      DateTime?            @db.Timestamp(6)
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at         DateTime?            @default(now()) @db.Timestamp(6)
+  deleted_at         DateTime?            @db.Timestamp(6)
+  username           String?              @unique @db.VarChar(50)
+  address            String?
+  blacklisted_tokens blacklisted_tokens[]
+  cart_items         cart_items[]
+  notifications      notifications[]
+  orders             orders[]
+  products           products[]
+  refresh_tokens     refresh_tokens[]
+  reviews            reviews[]
+  wishlists          wishlists[]
+
+  @@index([email], map: "idx_users_email")
+}
+
+model wishlists {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, product_id])
+}
+
+enum discount_type {
+  percentage
+  fixed
+}
+
+enum notification_type {
+  order
+  promotion
+  review
+  system
+  payment
+}
+
+enum order_status {
+  pending
+  confirmed
+  processing
+  shipped
+  delivered
+  cancelled
+  refunded
+}
+
+enum payment_method {
+  cod
+  bank_transfer
+  vnpay
+  momo
+  zalopay
+  credit_card
+}
+
+enum payment_status {
+  pending
+  processing
+  completed
+  failed
+  refunded
+  cancelled
+}
+
+enum product_status {
+  active
+  inactive
+  out_of_stock
+}
+
+enum user_role {
+  user
+  seller
+  admin
+}
+
+enum user_status {
+  active
+  inactive
+  suspended
+}
