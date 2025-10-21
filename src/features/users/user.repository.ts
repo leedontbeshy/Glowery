@@ -29,22 +29,17 @@ export class UserRepository {
     }
 
     static async create(data: CreateUserDTO): Promise<User> {
-        const result = await pool.query(
-            `INSERT INTO users (email,username, password, full_name, phone, address)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING id, email,username, full_name, phone,address, created_at`,
-            [
-                data.email,
-                data.username,
-                data.password,
-                data.full_name,
-                data.phone,
-                data.address || null,
-            ]
-        );
-        return result.rows[0];
-
- 
+        const user = await prisma.users.create({
+            data: {
+                email: data.email,
+                username: data.email,
+                password: data.password,
+                full_name: data.full_name,
+                address: data.address,
+                phone: data.phone,
+            } 
+        });
+        return user;
     }
 
     static async updateLastLogin(userId: number): Promise<void> {

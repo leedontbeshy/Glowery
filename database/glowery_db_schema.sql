@@ -39,12 +39,12 @@ CREATE TABLE users (
     full_name VARCHAR(100) NOT NULL,
     phone VARCHAR(15),
     avatar VARCHAR(255),
-    role user_role DEFAULT 'user',
-    status user_status DEFAULT 'active',
-    email_verified BOOLEAN DEFAULT FALSE,
+    role user_role NOT NULL DEFAULT 'user',
+    status user_status NOT NULL DEFAULT 'active',
+    email_verified NOT NULL BOOLEAN DEFAULT FALSE,
     last_login_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at NOT NULL TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at NOT NULL TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
 );
 
