@@ -61,8 +61,5 @@ export class UserService {
         const hashedPassword = await hashPassword(new_password);
         await UserRepository.updatePasswordById(userId, hashedPassword);
 
-        return {
-            message: 'Password updated successfully',
-        };
     }
 }

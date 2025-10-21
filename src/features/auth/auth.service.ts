@@ -4,10 +4,12 @@ import { registerSchema, loginSchema } from '@/features/users/user.schema';
 import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
 import { sendResetPasswordEmail } from '@/common/utils/email';
+import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from '@/common/errors/ApiError';
 
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
 import { LoginDTO, RegisterDTO } from './auth.dto';
+
 
 export class AuthService {
     static async register(data: RegisterDTO) {
@@ -20,7 +22,7 @@ export class AuthService {
 
         const existing = await UserRepository.findUserByEmail(email);
         if (existing) {
-            throw new Error('Email already exists');
+            throw new ConflictError('Email already exists');
         }
 
         const hashedPassword = await hashPassword(password);
@@ -49,13 +51,13 @@ export class AuthService {
 
         const user = await UserRepository.findUserByEmail(email);
         if (!user) {
-            throw new Error('Email does not exsit');
+            throw new NotFoundError('Email does not exsit');
         }
 
         //So sanh pass
         const match = await verifyPassword(password, user.password);
         if (!match) {
-            throw new Error('Wrong Password');
+            throw new UnauthorizedError('Wrong Password');
         }
 
         await UserRepository.updateLastLogin(user.id);
@@ -64,7 +66,7 @@ export class AuthService {
             {
                 id: user.id,
                 email: user.email,
-                role: user.role,
+                role: user.role!,
             },
             process.env.JWT_ACCESS_EXPIRES_IN as string,
         );
@@ -73,7 +75,7 @@ export class AuthService {
             {
                 id: user.id,
                 email: user.email,
-                role: user.role,
+                role: user.role!,
             },
             process.env.JWT_REFRESH_EXPIRES_IN as string
         );
@@ -126,18 +128,14 @@ export class AuthService {
     static async resetPassword(resetToken: string, newPassword: string) {
         const parsed = basePasswordSchema.safeParse(newPassword);
         if (!parsed.success) {
-            throw new Error(parsed.error.issues[0].message);
+            throw new BadRequestError(parsed.error.issues[0].message);
         }
         const data = await TokenRepository.findValidToken(resetToken);
         if (!data) {
-            throw new Error('Invalid or expired reset token');
+            throw new UnauthorizedError('Invalid or expired reset token');
         }
         const hashedPassword = await hashPassword(newPassword);
         await UserRepository.updatePasswordById(data.id, hashedPassword);
         await TokenRepository.deleteExistedToken(data.email);
-        return {
-            success: true,
-            message: 'Password has been reset successfully.',
-        };
     }
 }
