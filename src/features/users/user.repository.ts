@@ -1,4 +1,5 @@
 import { pool } from "@/config/database";
+import { prisma } from "@/common/db/prisma";
 import { UserBasic } from "@/features/users/user.type";
 
 import { CreateUserDTO } from "../auth/auth.dto";
@@ -6,13 +7,20 @@ import { CreateUserDTO } from "../auth/auth.dto";
 import { User } from "./user.model";
 import { UpdateUserDTO } from "./user.dto";
 
+
 export class UserRepository {
     static async findUserByEmail(email: string) {
-        const result = await pool.query(
-            "SELECT id, email, username, password, full_name, phone, address, role, status, created_at FROM users WHERE email = $1",
-            [email]
-        );
-        return result.rows[0] || null;
+        const user = await prisma.users.findUnique({
+            where: {email},
+            select:{
+                id: true,
+                address: true,
+                phone:true,
+                email: true,
+                full_name: true,
+            }
+        });
+        return user;
     }
 
     static async create(data: CreateUserDTO): Promise<User> {
@@ -30,6 +38,8 @@ export class UserRepository {
             ]
         );
         return result.rows[0];
+
+ 
     }
 
     static async updateLastLogin(userId: number): Promise<void> {
