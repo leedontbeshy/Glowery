@@ -49,3 +49,4 @@ docs/Commit-Guide.md
 
 
 .claude
+/src/generated/prisma

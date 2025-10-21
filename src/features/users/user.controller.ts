@@ -63,11 +63,11 @@ export const UserController = {
                 });
             }
 
-            const result = await UserService.updatePassword(userId, req.body);
+            await UserService.updatePassword(userId, req.body);
             
             return res.status(200).json({
                 success: true,
-                message: result.message,
+                message:'Password updated successfully',
             });
         } catch (error: any) {
             return handleControllerError(error, res, 'updatePassword');

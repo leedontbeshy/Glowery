@@ -2,13 +2,10 @@ import express from 'express';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
+import helmet from 'helmet';
 
 import routes from './features'; // index.ts
 import { swaggerOptions } from './config/swagger.config';
-import helmet from 'helmet';
-
-
-
 
 const app = express();
 
@@ -32,4 +29,7 @@ app.use('/api/v1', routes);
 app.use('/', () => {
     console.log('Hi')
 })
+
+
+
 export default app;
