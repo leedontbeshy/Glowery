@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 
+import { handleControllerError } from '@/common/utils/controllerHelper';
+
 import { AuthService } from './auth.service';
+
 
 export const AuthController = {
     async register(req: Request, res: Response) {
@@ -11,9 +14,7 @@ export const AuthController = {
                 user: result,
             });
         } catch (error: any) {
-            return res.status(400).json({
-                error: error.message,
-            });
+            return handleControllerError(error, res, 'register')
         }
     },
 
@@ -22,7 +23,7 @@ export const AuthController = {
             const result = await AuthService.login(req.body);
             return res.status(200).json({ result });
         } catch (error: any) {
-            return res.status(400).json({ error: error.message });
+            return handleControllerError(error, res, 'login')
         }
     },
 
@@ -43,9 +44,7 @@ export const AuthController = {
                 message: 'Logout Successfully',
             });
         } catch (error: any) {
-            return res.status(500).json({
-                error: error.message,
-            });
+            return handleControllerError(error, res, 'logout')
         }
     },
 
@@ -54,7 +53,7 @@ export const AuthController = {
             const result = await AuthService.forgotPassword(req.body.email);
             return res.status(200).json(result);
         } catch (error: any) {
-            return res.status(400).json({ error: error.message });
+            return handleControllerError(error, res, 'forgetPassword')
         }
     },
 
@@ -64,7 +63,7 @@ export const AuthController = {
             const result = await AuthService.resetPassword(token, newPassword);
             return res.status(200).json(result);
         } catch (error: any) {
-            return res.status(400).json({ error: error.message });
+            return handleControllerError(error, res, 'resetPassword')
         }
     },
 };
