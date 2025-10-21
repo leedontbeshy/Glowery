@@ -64,7 +64,7 @@ export class AuthService {
             {
                 id: user.id,
                 email: user.email,
-                role: user.role,
+                role: user.role!,
             },
             process.env.JWT_ACCESS_EXPIRES_IN as string,
         );
@@ -73,7 +73,7 @@ export class AuthService {
             {
                 id: user.id,
                 email: user.email,
-                role: user.role,
+                role: user.role!,
             },
             process.env.JWT_REFRESH_EXPIRES_IN as string
         );

@@ -8,6 +8,7 @@ import { User } from "./user.model";
 import { UpdateUserDTO } from "./user.dto";
 
 
+
 export class UserRepository {
     static async findUserByEmail(email: string) {
         const user = await prisma.users.findUnique({
@@ -18,6 +19,10 @@ export class UserRepository {
                 phone:true,
                 email: true,
                 full_name: true,
+                role: true,
+                password: true,
+                status: true,
+                username: true
             }
         });
         return user;
