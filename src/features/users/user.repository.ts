@@ -55,13 +55,24 @@ export class UserRepository {
 
     //User feat
     static async findUserById(userId: number): Promise<UserBasic | null> {
-        const result = await pool.query(
-            `SELECT id, email,username, phone,address,
-             created_at, status, full_name, last_login_at, role  
-             FROM users WHERE id = $1`,
-            [userId]
-        );
-        return result.rows[0] || null;
+        const userFound = await prisma.users.findUnique({
+            where:{
+                id: userId
+            },
+            select:{
+                id: true,
+                email: true,
+                username: true,
+                phone: true,
+                address: true,
+                created_at: true,
+                status: true,
+                full_name: true,
+                last_login_at: true,
+                role: true
+            }
+        });
+        return userFound;
     }
 
     static async updateUser(userId: number, userData: UpdateUserDTO) {
