@@ -1,6 +1,4 @@
 import { prisma } from "@/common/db/prisma";
-import { pool } from "@/config/database";
-
 
 export class AdminRepository {
     static async getAllUser(limit: number = 50, offset: number = 0) {

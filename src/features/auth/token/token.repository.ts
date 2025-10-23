@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-
+import { prisma } from '@/common/db/prisma';
 import { pool } from '@/config/database';
 import { BadRequestError } from '@/common/errors/ApiError';
 import { getTokenExpiration } from '@/common/utils/jwt';
@@ -8,12 +8,17 @@ import { getTokenExpiration } from '@/common/utils/jwt';
 
 export class TokenRepository {
     //login
-    static async addRefreshTokenToDB(refreshToken:string, userId: number):Promise<void>{
+    static async addRefreshTokenToDB(refreshToken: string, userId: number): Promise<void> {
         const expiresAt = dayjs().add(14, 'day').toDate();
-        await pool.query(`
-            INSERT INTO refresh_tokens (user_id, token, expires_at, is_revoked, created_at)
-            VALUES($1, $2,$3,$4, CURRENT_TIMESTAMP)
-            `,[userId, refreshToken,expiresAt,false]);
+        await prisma.refresh_tokens.create({
+            data: {
+                user_id: userId,
+                token: refreshToken,
+                expires_at: expiresAt,
+                is_revoked: false,
+                created_at: new Date(),
+            },
+        });
     }
 
     static async addToBlackList(accessToken: string, refreshToken: string, user_id: number): Promise<boolean> {
