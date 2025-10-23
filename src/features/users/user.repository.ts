@@ -37,15 +37,20 @@ export class UserRepository {
                 full_name: data.full_name,
                 address: data.address,
                 phone: data.phone,
-            } 
+            }     
         });
         return user;
     }
 
     static async updateLastLogin(userId: number): Promise<void> {
-        await pool.query("UPDATE users SET last_login_at = NOW() WHERE id = $1", [
-            userId,
-        ]);
+        await prisma.users.update({
+            where:{
+                id: userId,
+            },
+            data:{
+                last_login_at: new Date(),
+            }
+        })
     }
 
     //User feat
