@@ -99,21 +99,24 @@ export class UserRepository {
     return user;
     }
 
-    static async updatePasswordById(userId: number, password: string) {
-        const result = await pool.query(
-            `UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2
-          RETURNING id, email, username, full_name`,
-            [password, userId]
-        );
-        return result.rows[0] || null;
+    static async updatePasswordById(userId: number, password: string):Promise<void> {
+        await prisma.users.update({
+            where: {
+                id: userId
+            },
+            data:{
+                password: password
+            }
+        })
     }
 
-    static async getPasswordById(userId: number): Promise<string | null> {
-        const result = await pool.query(
-            `SELECT password FROM users WHERE id = $1`,
-            [userId]
-        );
-        if (result.rows.length === 0) return null;
-        return result.rows[0]?.password || null;
+    static async getPasswordById(userId: number): Promise<string | null>  {
+        const user = await prisma.users.findUnique({
+            where:{id: userId},
+            select:{
+                password: true
+            }
+        });
+        return user ? user.password : null;
     }
 }
