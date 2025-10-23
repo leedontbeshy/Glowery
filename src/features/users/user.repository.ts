@@ -75,16 +75,28 @@ export class UserRepository {
         return userFound;
     }
 
-    static async updateUser(userId: number, userData: UpdateUserDTO) {
-        const { full_name, address, phone } = userData;
-        const result = await pool.query(
-            `
-      UPDATE users SET full_name = $1, address = $2, phone = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4
-      RETURNING id, email, username, full_name, phone, address, role, status, updated_at;
-      `,
-            [full_name, address, phone, userId]
-        );
-        return result.rows[0] || null;
+    static async updateUser(userId: number, userData: UpdateUserDTO):Promise<any> {
+    const user = await prisma.users.update({
+        where:{
+            id: userId
+        },
+        data: {
+            full_name: userData.full_name,
+            address: userData.address,
+            phone: userData.phone,
+            updated_at: new Date(),
+        },
+        select:{
+            id: true,
+            username: true,
+            email: true,
+            full_name: true,
+            address: true,
+            phone: true,
+            updated_at: true
+        }
+    });
+    return user;
     }
 
     static async updatePasswordById(userId: number, password: string) {
