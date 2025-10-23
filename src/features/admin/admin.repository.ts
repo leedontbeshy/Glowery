@@ -1,16 +1,28 @@
+import { prisma } from "@/common/db/prisma";
 import { pool } from "@/config/database";
 
 
 export class AdminRepository {
     static async getAllUser(limit: number = 50, offset: number = 0) {
 
-        const result = await pool.query(`SELECT id,email, username, full_name,
-                phone, role, status, email_verified, created_at, last_login_at, address
-                FROM users
-                ORDER BY created_at
-                DESC LIMIT $1 OFFSET $2`, [limit, offset]);
-        return result.rows;
-
+        const users = await prisma.users.findMany({
+            select:{
+                id: true,
+                email: true,
+                username:true,
+                full_name: true,
+                phone: true,
+                role: true,
+                status: true,
+                email_verified: true,
+                created_at: true,
+                address: true,
+                last_login_at: true
+            },
+            take: limit,
+            skip: offset
+        });
+        return users;
     };
 
     static async getTotalUsersCount(): Promise<number> {

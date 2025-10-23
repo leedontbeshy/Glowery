@@ -1,4 +1,3 @@
-import { pool } from "@/config/database";
 import { prisma } from "@/common/db/prisma";
 import { UserBasic } from "@/features/users/user.type";
 
