@@ -21,29 +21,47 @@ export class TokenRepository {
         });
     }
 
-    static async addToBlackList(accessToken: string, refreshToken: string, user_id: number): Promise<boolean> {
-        let insertedCount = 0;
-
+    static async addToBlackList(
+        accessToken: string,
+        refreshToken: string,
+        user_id: number
+    ): Promise<boolean> {
+        
         const accessExp = getTokenExpiration(accessToken) ?? new Date();
-        const result1 = await pool.query(
-            `INSERT INTO blacklisted_tokens (access_token, user_id, reason, expires_at)
-                     VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (access_token) DO NOTHING`,
-            [accessToken, user_id, 'logout', accessExp],
-        );
-        insertedCount += (result1.rowCount ?? 0);
-
-
         const refreshExp = getTokenExpiration(refreshToken) ?? new Date();
-        const result2 = await pool.query(
-            `INSERT INTO blacklisted_tokens (refresh_token, user_id, reason, expires_at)
-                     VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (refresh_token) DO NOTHING`,
-            [refreshToken, user_id, 'logout', refreshExp],
-        );
-        insertedCount += (result2.rowCount ?? 0);
-        return insertedCount > 0;
+
+        const existing = await prisma.blacklisted_tokens.findMany({
+            where: { token: { in: [accessToken, refreshToken] } },
+        });
+        if (existing.length > 0) {
+            throw new BadRequestError("Token Existed");
+        }
+
+        await prisma.$transaction(async (tx) => {
+            await tx.blacklisted_tokens.create({
+                data: {
+                    token: accessToken,
+                    type: "access",
+                    user_id,
+                    reason: "logout",
+                    expires_at: accessExp,
+                },
+            });
+
+            await tx.blacklisted_tokens.create({
+                data: {
+                    token: refreshToken,
+                    type: "refresh",
+                    user_id,
+                    reason: "logout",
+                    expires_at: refreshExp,
+                },
+            });
+        });
+
+        return true;
     }
+
 
     static async isBlacklisted(token: string): Promise<boolean> {
         const result = await pool.query(
