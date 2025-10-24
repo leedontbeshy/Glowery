@@ -26,7 +26,7 @@ export class TokenRepository {
         refreshToken: string,
         user_id: number
     ): Promise<boolean> {
-        
+
         const accessExp = getTokenExpiration(accessToken) ?? new Date();
         const refreshExp = getTokenExpiration(refreshToken) ?? new Date();
 
@@ -63,28 +63,27 @@ export class TokenRepository {
     }
 
 
-    static async isBlacklisted(token: string): Promise<boolean> {
-        const result = await pool.query(
-            'SELECT 1 FROM blacklisted_tokens WHERE access_token = $1 OR refresh_token = $1',
-            [token],
-        );
-        return (result.rowCount ?? 0) > 0;
-    }
+  static async isBlacklisted(token: string): Promise<boolean> {
+    const result = await prisma.blacklisted_tokens.findUnique({
+      where: { token },
+    });
+    return !!result;
+  }
 
-    static async cleanupExpired() {
-        await pool.query('DELETE FROM blacklisted_tokens WHERE expires_at < NOW()');
-    }
+  static async cleanupExpired(): Promise<void> {
+    await prisma.blacklisted_tokens.deleteMany({
+      where: {
+        expires_at: { lt: new Date() },
+      },
+    });
+  }
 
     //Reset Token
-    static async deleteExistedToken(email: string, userId?: number): Promise<void> {
-        if (userId) {
-            await pool.query(`DELETE FROM reset_tokens WHERE user_id = $1`, [userId]);
-        }
-        else {
-            await pool.query(`DELETE FROM reset_tokens WHERE email = $1`, [email]);
-        }
-    }
-
+    static async deleteExistedToken(email: string): Promise<void> {
+  await prisma.reset_tokens.deleteMany({
+    where: { email },
+  });
+}
     static async createResetToken(email: string, token: string, expiresAt: Date): Promise<void> {
         await pool.query(
             `INSERT INTO reset_tokens (email, token, expires_at, created_at)
@@ -94,32 +93,36 @@ export class TokenRepository {
     }
 
     static async checkResetToken(email: string): Promise<boolean> {
-        const result = await pool.query(`SELECT token FROM reset_tokens WHERE email = $1`, [
-            email,
-        ]);
-        return (result?.rowCount ?? 0) > 0;
+    const result = await prisma.reset_tokens.findFirst({
+      where: { email },
+    });
+    return !!result;
+  }
+
+     static async findValidToken(token: string): Promise<{ id: number; email: string } | null> {
+    // JOIN logic tương tự: JOIN reset_tokens rt ON users.email = rt.email
+    const record = await prisma.reset_tokens.findFirst({
+      where: { token },
+      include: {
+        users: {
+          select: { id: true, email: true },
+        },
+      },
+    });
+
+    if (!record) return null;
+
+    const now = new Date();
+    if (record.expires_at < now) {
+      await prisma.reset_tokens.delete({
+        where: { token },
+      });
+      throw new BadRequestError("Reset token has expired");
     }
 
-    static async findValidToken(token: string): Promise<any> {
-        const result = await pool.query(
-            `SELECT rt.email, rt.expires_at, u.id as user_id
-                 FROM reset_tokens rt
-                 JOIN users u ON rt.email = u.email
-                 WHERE rt.token = $1`,
-            [token],
-        );
-        if (result.rowCount === 0) return null;
-
-        const record = result.rows[0];
-        const now = new Date();
-
-        if (new Date(record.expires_at) < now) {
-            await pool.query(`DELETE FROM reset_tokens WHERE token = $1`, [token]);
-            throw new BadRequestError('Reset token has expired');
-        }
-        return {
-            id: record.user_id,
-            email: record.email,
-        };
-    }
+    return {
+      id: record.users?.id ?? 0,
+      email: record.email,
+    };
+  }
 }
