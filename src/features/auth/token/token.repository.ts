@@ -86,14 +86,16 @@ export class TokenRepository {
   static async createResetToken(
     email: string,
     token: string,
-    expiresAt: Date
+    expiresAt: Date,
+    userId: number
   ): Promise<void> {
     await prisma.reset_tokens.create({
       data: {
         email,
         token,
         expires_at: expiresAt,
-        created_at: new Date(), // Prisma tự động tạo nếu có @default(now()), nhưng vẫn nên explicit cho clarity
+        created_at: new Date(),
+        user_id: userId
       },
     });
   }
@@ -108,7 +110,7 @@ export class TokenRepository {
   static async findValidToken(
     token: string
   ): Promise<{ id: number; email: string } | null> {
-    // JOIN logic tương tự: JOIN reset_tokens rt ON users.email = rt.email
+    // JOIN logic <=> JOIN reset_tokens rt ON users.email = rt.email
     const record = await prisma.reset_tokens.findFirst({
       where: { token },
       include: {

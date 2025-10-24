@@ -114,9 +114,9 @@ export class AuthService {
         if (hasOldToken) {
             await TokenRepository.deleteExistedToken(email);
         }
-        const data = await ResetTokenService.createNewResetToken();
+        const data = await ResetTokenService.createNewResetToken(); //generate resettoken
 
-        await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt);
+        await TokenRepository.createResetToken(email, data.resetToken, data.expiresAt, user.id); //add to db
 
         await sendResetPasswordEmail(email, data.resetToken);
 
