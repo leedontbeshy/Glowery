@@ -1,67 +1,66 @@
-import dayjs from 'dayjs';
-import { prisma } from '@/common/db/prisma';
-import { pool } from '@/config/database';
-import { BadRequestError } from '@/common/errors/ApiError';
-import { getTokenExpiration } from '@/common/utils/jwt';
+import dayjs from "dayjs";
 
-
+import { prisma } from "@/common/db/prisma";
+import { BadRequestError } from "@/common/errors/ApiError";
+import { getTokenExpiration } from "@/common/utils/jwt";
 
 export class TokenRepository {
-    //login
-    static async addRefreshTokenToDB(refreshToken: string, userId: number): Promise<void> {
-        const expiresAt = dayjs().add(14, 'day').toDate();
-        await prisma.refresh_tokens.create({
-            data: {
-                user_id: userId,
-                token: refreshToken,
-                expires_at: expiresAt,
-                is_revoked: false,
-                created_at: new Date(),
-            },
-        });
+  //login
+  static async addRefreshTokenToDB(
+    refreshToken: string,
+    userId: number
+  ): Promise<void> {
+    const expiresAt = dayjs().add(14, "day").toDate();
+    await prisma.refresh_tokens.create({
+      data: {
+        user_id: userId,
+        token: refreshToken,
+        expires_at: expiresAt,
+        is_revoked: false,
+        created_at: new Date(),
+      },
+    });
+  }
+
+  static async addToBlackList(
+    accessToken: string,
+    refreshToken: string,
+    user_id: number
+  ): Promise<boolean> {
+    const accessExp = getTokenExpiration(accessToken) ?? new Date();
+    const refreshExp = getTokenExpiration(refreshToken) ?? new Date();
+
+    const existing = await prisma.blacklisted_tokens.findMany({
+      where: { token: { in: [accessToken, refreshToken] } },
+    });
+    if (existing.length > 0) {
+      throw new BadRequestError("Token Existed");
     }
 
-    static async addToBlackList(
-        accessToken: string,
-        refreshToken: string,
-        user_id: number
-    ): Promise<boolean> {
+    await prisma.$transaction(async (tx) => {
+      await tx.blacklisted_tokens.create({
+        data: {
+          token: accessToken,
+          type: "access",
+          user_id,
+          reason: "logout",
+          expires_at: accessExp,
+        },
+      });
 
-        const accessExp = getTokenExpiration(accessToken) ?? new Date();
-        const refreshExp = getTokenExpiration(refreshToken) ?? new Date();
+      await tx.blacklisted_tokens.create({
+        data: {
+          token: refreshToken,
+          type: "refresh",
+          user_id,
+          reason: "logout",
+          expires_at: refreshExp,
+        },
+      });
+    });
 
-        const existing = await prisma.blacklisted_tokens.findMany({
-            where: { token: { in: [accessToken, refreshToken] } },
-        });
-        if (existing.length > 0) {
-            throw new BadRequestError("Token Existed");
-        }
-
-        await prisma.$transaction(async (tx) => {
-            await tx.blacklisted_tokens.create({
-                data: {
-                    token: accessToken,
-                    type: "access",
-                    user_id,
-                    reason: "logout",
-                    expires_at: accessExp,
-                },
-            });
-
-            await tx.blacklisted_tokens.create({
-                data: {
-                    token: refreshToken,
-                    type: "refresh",
-                    user_id,
-                    reason: "logout",
-                    expires_at: refreshExp,
-                },
-            });
-        });
-
-        return true;
-    }
-
+    return true;
+  }
 
   static async isBlacklisted(token: string): Promise<boolean> {
     const result = await prisma.blacklisted_tokens.findUnique({
@@ -78,28 +77,37 @@ export class TokenRepository {
     });
   }
 
-    //Reset Token
-    static async deleteExistedToken(email: string): Promise<void> {
-  await prisma.reset_tokens.deleteMany({
-    where: { email },
-  });
-}
-    static async createResetToken(email: string, token: string, expiresAt: Date): Promise<void> {
-        await pool.query(
-            `INSERT INTO reset_tokens (email, token, expires_at, created_at)
-                VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
-            [email, token, expiresAt],
-        );
-    }
+  //Reset Token
+  static async deleteExistedToken(email: string): Promise<void> {
+    await prisma.reset_tokens.deleteMany({
+      where: { email },
+    });
+  }
+  static async createResetToken(
+    email: string,
+    token: string,
+    expiresAt: Date
+  ): Promise<void> {
+    await prisma.reset_tokens.create({
+      data: {
+        email,
+        token,
+        expires_at: expiresAt,
+        created_at: new Date(), // Prisma tự động tạo nếu có @default(now()), nhưng vẫn nên explicit cho clarity
+      },
+    });
+  }
 
-    static async checkResetToken(email: string): Promise<boolean> {
+  static async checkResetToken(email: string): Promise<boolean> {
     const result = await prisma.reset_tokens.findFirst({
       where: { email },
     });
     return !!result;
   }
 
-     static async findValidToken(token: string): Promise<{ id: number; email: string } | null> {
+  static async findValidToken(
+    token: string
+  ): Promise<{ id: number; email: string } | null> {
     // JOIN logic tương tự: JOIN reset_tokens rt ON users.email = rt.email
     const record = await prisma.reset_tokens.findFirst({
       where: { token },
