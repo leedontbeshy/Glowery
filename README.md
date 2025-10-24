@@ -60,18 +60,54 @@
 - [x] Email Verification
 - [x] Forgot Password & Reset Password
 - [x] Refresh Token
+- [x] Token Blacklisting
 - [x] Role-based Access Control (RBAC)
 - [x] Authentication & Authorization Middleware
+- [x] Resource Owner Authorization
 
-### 🚧 In Development
+#### 👥 User Management
+- [x] User Profile Management
+- [x] User CRUD Operations
+- [x] Role Management (User, Seller, Admin)
+- [x] User Status Management
+
+#### 🔍 Search & Filter
+- [x] Search Service Implementation
+- [x] Advanced Search Repository
+
+#### � Admin Features
+- [x] Admin Dashboard
+- [x] User Management
+- [x] System Administration
+
+### �🚧 In Development
 
 - [ ] **Product Management**
+  - [ ] Product CRUD Operations
+  - [ ] Product Categories
+  - [ ] Product Variants
+  - [ ] Product Images
+  - [ ] Stock Management
 - [ ] **Order Management**
+  - [ ] Shopping Cart
+  - [ ] Checkout Process
+  - [ ] Order Tracking
+  - [ ] Order History
 - [ ] **Payment Integration**
-- [ ] **User Management**
+  - [ ] VNPay Integration
+  - [ ] Momo Integration
+  - [ ] ZaloPay Integration
+  - [ ] COD (Cash on Delivery)
 - [ ] **Reviews & Ratings**
+  - [ ] Product Reviews
+  - [ ] Rating System
 - [ ] **Notifications**
+  - [ ] Order Notifications
+  - [ ] Promotion Notifications
+  - [ ] System Notifications
 - [ ] **Analytics & Reports**
+  - [ ] Sales Reports
+  - [ ] User Analytics
 
 ---
 
@@ -82,17 +118,21 @@
 - **Language:** TypeScript 5.9+
 - **Framework:** Express 5.1+
 - **Database:** PostgreSQL 16+
+- **ORM:** Prisma 6.17+
 - **Authentication:** JWT (jsonwebtoken)
 - **Password Hash:** Argon2
 - **Validation:** Zod
 - **Email Service:** Resend
 - **API Documentation:** Swagger UI
+- **Security:** Helmet
 
 ### Development Tools
 - **Dev Server:** ts-node-dev
 - **Path Mapping:** tsconfig-paths
-- **Environment:** dotenv
+- **Environment:** dotenv, cross-env
 - **File Upload:** Multer
+- **Logging:** Morgan
+- **Code Quality:** ESLint, Prettier
 
 ---
 
@@ -126,10 +166,11 @@ yarn install
 
 ### 3. Configure Environment Variables
 
-Create `.env` file from `.env.example`:
+Create `.env` file in the root directory:
 
 ```bash
-cp .env.example .env
+# Copy from .env.example if available
+# Or create a new .env file with the following content
 ```
 
 Update environment variables in `.env` file:
@@ -139,12 +180,8 @@ Update environment variables in `.env` file:
 PORT=8000
 NODE_ENV=development
 
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_NAME=glowery_db
+# Database (Prisma)
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/glowery_db?schema=public"
 
 # JWT
 JWT_SECRET=your_super_secret_jwt_key_here
@@ -162,7 +199,20 @@ CLIENT_URL=http://localhost:3000
 
 ### 4. Setup Database
 
-Create database and run schema:
+#### Option 1: Using Prisma (Recommended)
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate deploy
+
+# (Optional) Seed database
+# npx prisma db seed
+```
+
+#### Option 2: Using SQL Scripts
 
 ```bash
 # Create database
@@ -192,72 +242,97 @@ API Documentation: `http://localhost:8000/api-docs`
 ## 📁 Folder Structure
 
 ```
-src
- ┣ common
- ┃ ┣ constants
- ┃ ┃ ┣ error-codes.ts
- ┃ ┃ ┣ http-status.ts
- ┃ ┃ ┗ user.enums.ts
- ┃ ┣ errors
- ┃ ┃ ┣ ApiError.ts
- ┃ ┃ ┣ BadRequestError.ts
- ┃ ┃ ┣ databaseErrorHandler.ts
- ┃ ┃ ┗ UnauthorizedError.ts
- ┃ ┣ middlewares
- ┃ ┃ ┣ auth.middleware.ts
- ┃ ┃ ┣ authorize.middleware.ts
- ┃ ┃ ┣ authorizeResourceOwner.middleware.ts
- ┃ ┃ ┣ error.middleware.ts
- ┃ ┃ ┗ validate.middleware.ts
- ┃ ┣ schemas
- ┃ ┃ ┗ common.schema.ts
- ┃ ┣ types
- ┃ ┃ ┣ express.d.ts
- ┃ ┃ ┣ jwt.type.ts
- ┃ ┃ ┗ pagination.type.ts
- ┃ ┗ utils
- ┃ ┃ ┣ email.ts
- ┃ ┃ ┣ hash.ts
- ┃ ┃ ┣ jwt.ts
- ┃ ┃ ┗ logger.ts
- ┣ config
- ┃ ┣ database.ts
- ┃ ┗ swagger.config.ts
- ┣ features
- ┃ ┣ admin
- ┃ ┃ ┣ admin.controller.ts
- ┃ ┃ ┣ admin.repository.ts
- ┃ ┃ ┣ admin.route.ts
- ┃ ┃ ┣ admin.service.ts
- ┃ ┃ ┗ admin.type.ts
- ┃ ┣ auth
- ┃ ┃ ┣ token
- ┃ ┃ ┃ ┣ token.repository.ts
- ┃ ┃ ┃ ┗ token.service.ts
- ┃ ┃ ┣ auth.controller.ts
- ┃ ┃ ┣ auth.dto.ts
- ┃ ┃ ┣ auth.route.ts
- ┃ ┃ ┣ auth.schema.ts
- ┃ ┃ ┗ auth.service.ts
- ┃ ┣ orders
- ┃ ┣ products
- ┃ ┣ search
- ┃ ┃ ┣ search.repository.ts
- ┃ ┃ ┣ search.service.ts
- ┃ ┃ ┗ search.type.ts
- ┃ ┣ users
- ┃ ┃ ┣ user.controller.ts
- ┃ ┃ ┣ user.dto.ts
- ┃ ┃ ┣ user.model.ts
- ┃ ┃ ┣ user.repository.ts
- ┃ ┃ ┣ user.route.ts
- ┃ ┃ ┣ user.schema.ts
- ┃ ┃ ┣ user.service.ts
- ┃ ┃ ┗ user.type.ts
- ┃ ┗ index.ts
- ┣ app.ts
- ┗ server.ts
-
+Glowery/
+├── database/                         # Database scripts
+│   ├── glowery_db_schema.sql        # SQL schema
+│   └── seedData.sql                 # Seed data
+├── docs/                            # Documentation
+│   └── api-docs/                    # API documentation
+│       ├── auth.yaml
+│       └── user.yaml
+├── prisma/                          # Prisma ORM
+│   ├── schema.prisma                # Prisma schema
+│   └── migrations/                  # Database migrations
+├── src/
+│   ├── app.ts                       # Express app configuration
+│   ├── server.ts                    # Server entry point
+│   ├── common/                      # Shared utilities
+│   │   ├── constants/               # Constants & enums
+│   │   │   ├── error-codes.ts
+│   │   │   ├── http-status.ts
+│   │   │   └── user.enums.ts
+│   │   ├── db/                      # Database connection
+│   │   │   └── prisma.ts
+│   │   ├── errors/                  # Error classes
+│   │   │   ├── ApiError.ts
+│   │   │   ├── BadRequestError.ts
+│   │   │   ├── databaseErrorHandler.ts
+│   │   │   └── UnauthorizedError.ts
+│   │   ├── middlewares/             # Global middlewares
+│   │   │   ├── auth.middleware.ts
+│   │   │   ├── authorize.middleware.ts
+│   │   │   ├── authorizeResourceOwner.middleware.ts
+│   │   │   ├── error.middleware.ts
+│   │   │   └── validate.middleware.ts
+│   │   ├── schemas/                 # Zod schemas
+│   │   │   └── common.schema.ts
+│   │   ├── types/                   # TypeScript types
+│   │   │   ├── express.d.ts
+│   │   │   ├── jwt.type.ts
+│   │   │   └── pagination.type.ts
+│   │   └── utils/                   # Helper functions
+│   │       ├── controllerHelper.ts
+│   │       ├── email.ts
+│   │       ├── hash.ts
+│   │       ├── jwt.ts
+│   │       └── logger.ts
+│   ├── config/                      # Configuration files
+│   │   ├── database.ts
+│   │   └── swagger.config.ts
+│   ├── features/                    # Feature modules
+│   │   ├── index.ts                 # Routes aggregator
+│   │   ├── admin/                   # Admin module
+│   │   │   ├── admin.controller.ts
+│   │   │   ├── admin.repository.ts
+│   │   │   ├── admin.route.ts
+│   │   │   ├── admin.service.ts
+│   │   │   └── admin.type.ts
+│   │   ├── auth/                    # Authentication module
+│   │   │   ├── token/               # Token management
+│   │   │   │   ├── token.dto.ts
+│   │   │   │   ├── token.repository.ts
+│   │   │   │   └── token.service.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.dto.ts
+│   │   │   ├── auth.route.ts
+│   │   │   ├── auth.schema.ts
+│   │   │   └── auth.service.ts
+│   │   ├── search/                  # Search module
+│   │   │   ├── search.repository.ts
+│   │   │   ├── search.service.ts
+│   │   │   └── search.type.ts
+│   │   └── users/                   # User module
+│   │       ├── user.controller.ts
+│   │       ├── user.dto.ts
+│   │       ├── user.model.ts
+│   │       ├── user.repository.ts
+│   │       ├── user.route.ts
+│   │       ├── user.schema.ts
+│   │       ├── user.service.ts
+│   │       └── user.type.ts
+│   └── generated/                   # Generated files
+│       └── prisma/                  # Prisma client
+├── test/                            # Test files
+│   ├── db.test.ts
+│   ├── prisma.test.ts
+│   └── user.test/
+│       └── user.test.ts
+├── .gitignore
+├── eslint.config.js                 # ESLint configuration
+├── package.json                     # Dependencies
+├── tsconfig.json                    # TypeScript config
+├── tsconfig.test.json              # Test TypeScript config
+└── README.md
 ```
 
 ---
@@ -298,30 +373,33 @@ The project uses **Layered Architecture** combined with **Feature-based Structur
 
 ### Layer Details
 
-#### 1️⃣ **API Layer** (`features/`)
-- **Routes**: Define endpoints and HTTP methods
+#### 1️⃣ **API Layer** (`features/*/route.ts`, `features/*/controller.ts`)
+- **Routes**: Define endpoints and HTTP methods for each feature
 - **Controllers**: Handle HTTP requests/responses
 - **Validation**: Validate input with Zod schemas
-- **Middlewares**: Auth, error handling, validation
+- **Middlewares**: Apply authentication, authorization, and validation
 
 #### 2️⃣ **Business Logic Layer** (`features/*/service.ts`)
-- Contains business logic and workflows
+- Contains business logic and workflows for each feature
 - Orchestrates complex operations
-- Handles authentication, authorization
+- Handles authentication, authorization logic
 - Calls repositories to access data
+- Communicates with external services (email, etc.)
 
-#### 3️⃣ **Data Access Layer** (`core/`)
-- **Repositories**: Database queries
+#### 3️⃣ **Data Access Layer** (`features/*/repository.ts`, `features/*/model.ts`)
+- **Repositories**: Database queries using Prisma Client
 - **Models**: Domain entities and type definitions
-- **Schemas**: Zod schemas for validation
+- **DTOs**: Data Transfer Objects for API contracts
 - Separates database logic from business logic
+- Handles data transformation and mapping
 
 #### 4️⃣ **Common/Shared Layer** (`common/`)
-- **Utilities**: Helper functions (hash, jwt, logger)
-- **Errors**: Custom error classes
-- **Middlewares**: Global middlewares
-- **Constants**: Enums, error codes, HTTP status
-- **Types**: Shared TypeScript types
+- **Utilities**: Helper functions (hash, jwt, logger, email)
+- **Errors**: Custom error classes (ApiError, BadRequestError, etc.)
+- **Middlewares**: Global middlewares (auth, error handling, validation)
+- **Constants**: Enums, error codes, HTTP status codes
+- **Types**: Shared TypeScript types and interfaces
+- **Database**: Prisma client instance (`common/db/prisma.ts`)
 
 ### Request Processing Flow
 
@@ -347,28 +425,62 @@ Client Request
 ### Example: Authentication Flow
 
 ```typescript
-// 1. Route defines endpoint
-POST /api/auth/login
+// 1. Route defines endpoint (features/auth/auth.route.ts)
+POST /api/v1/auth/login
     │
     ▼
-// 2. Validation middleware (Zod)
-validateRequest(loginSchema)
+// 2. Validation middleware (Zod schema)
+validateRequest(loginSchema) // features/auth/auth.schema.ts
     │
     ▼
-// 3. Controller receives request
+// 3. Controller receives request (features/auth/auth.controller.ts)
 authController.login(req, res)
     │
     ▼
-// 4. Service processes business logic
+// 4. Service processes business logic (features/auth/auth.service.ts)
 authService.login(email, password)
     │
-    ├──▶ userRepository.findByEmail()
-    ├──▶ hash.verify(password)
-    └──▶ jwt.generateToken()
+    ├──▶ userRepository.findByEmail() // features/users/user.repository.ts
+    ├──▶ hash.verify(password) // common/utils/hash.ts
+    ├──▶ jwt.generateToken() // common/utils/jwt.ts
+    └──▶ tokenService.createRefreshToken() // features/auth/token/token.service.ts
     │
     ▼
 // 5. Return response
-{ token, user }
+{ accessToken, refreshToken, user }
+```
+
+### Feature Module Structure
+
+Each feature follows a consistent structure:
+
+```
+features/
+├── auth/                    # Authentication feature
+│   ├── auth.route.ts       # API routes
+│   ├── auth.controller.ts  # HTTP handlers
+│   ├── auth.service.ts     # Business logic
+│   ├── auth.schema.ts      # Zod validation schemas
+│   ├── auth.dto.ts         # Data Transfer Objects
+│   └── token/              # Sub-feature
+│       ├── token.service.ts
+│       ├── token.repository.ts
+│       └── token.dto.ts
+├── users/                   # User feature
+│   ├── user.route.ts
+│   ├── user.controller.ts
+│   ├── user.service.ts
+│   ├── user.repository.ts  # Database queries
+│   ├── user.model.ts       # Domain model
+│   ├── user.schema.ts
+│   ├── user.dto.ts
+│   └── user.type.ts        # TypeScript types
+└── admin/                   # Admin feature
+    ├── admin.route.ts
+    ├── admin.controller.ts
+    ├── admin.service.ts
+    ├── admin.repository.ts
+    └── admin.type.ts
 ```
 
 ### Design Patterns Used
@@ -399,9 +511,11 @@ API documentation available at: **http://localhost:8000/api-docs**
 
 ### Authentication Endpoints
 
+All API endpoints are prefixed with `/api/v1`
+
 #### 🔐 Register
 ```http
-POST /api/auth/register
+POST /api/v1/auth/register
 Content-Type: application/json
 
 {
@@ -414,7 +528,7 @@ Content-Type: application/json
 
 #### 🔐 Login
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -425,13 +539,23 @@ Content-Type: application/json
 
 #### 🔐 Logout
 ```http
-POST /api/auth/logout
+POST /api/v1/auth/logout
 Authorization: Bearer <token>
+```
+
+#### 🔐 Refresh Token
+```http
+POST /api/v1/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token_here"
+}
 ```
 
 #### 🔐 Forgot Password
 ```http
-POST /api/auth/forgot-password
+POST /api/v1/auth/forgot-password
 Content-Type: application/json
 
 {
@@ -441,7 +565,7 @@ Content-Type: application/json
 
 #### 🔐 Reset Password
 ```http
-POST /api/auth/reset-password
+POST /api/v1/auth/reset-password
 Content-Type: application/json
 
 {
@@ -452,36 +576,66 @@ Content-Type: application/json
 
 #### 🔐 Verify Email
 ```http
-GET /api/auth/verify-email?token=<verification_token>
+GET /api/v1/auth/verify-email?token=<verification_token>
+```
+
+### User Endpoints
+
+#### 👤 Get User Profile
+```http
+GET /api/v1/users/profile
+Authorization: Bearer <token>
+```
+
+#### 👤 Update User Profile
+```http
+PUT /api/v1/users/:id
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "full_name": "Updated Name",
+  "phone": "0987654321"
+}
+```
+
+### Admin Endpoints
+
+#### 👑 Get All Users
+```http
+GET /api/v1/admin/users
+Authorization: Bearer <admin_token>
 ```
 
 ### Learn More
 
-- 📖 [API Documentation](./docs/APIs-docs.md)
-- 🔄 [Authentication Flow](./docs/flow/Register_Login_Logout.md)
-- 🔑 [Password Reset Flow](./docs/flow/ResetPassword.flow.md)
+- 📖 Full API Documentation available at: `http://localhost:8000/api-docs`
+- � All protected endpoints require JWT Bearer token
+- � Request/Response examples in Swagger UI
 
 ---
 
 ## 🗄 Database Schema
 
-### Core Tables
+### Overview
 
-The system includes **13 main tables**:
+The system uses **Prisma ORM** with PostgreSQL and includes **15 main tables**:
 
-1. **users** - User management
-2. **tokens** - Refresh tokens & verification tokens
-3. **addresses** - Shipping addresses
-4. **categories** - Product categories
-5. **products** - Products
-6. **product_variants** - Product variants
+1. **users** - User accounts & authentication
+2. **refresh_tokens** - JWT refresh tokens
+3. **reset_tokens** - Password reset tokens
+4. **blacklisted_tokens** - Revoked tokens
+5. **categories** - Product categories (hierarchical)
+6. **products** - Product catalog
 7. **product_images** - Product images
-8. **carts** - Shopping carts
-9. **cart_items** - Cart items
-10. **orders** - Orders
-11. **order_items** - Order items
-12. **payments** - Payments
-13. **reviews** - Product reviews
+8. **cart_items** - Shopping cart items
+9. **orders** - Order management
+10. **order_items** - Order line items
+11. **payments** - Payment transactions
+12. **reviews** - Product reviews & ratings
+13. **wishlists** - User wishlists
+14. **notifications** - User notifications
+15. **coupons** - Discount coupons
 
 ### ENUMs (Type Safety)
 
@@ -509,7 +663,28 @@ notification_type: 'order' | 'promotion' | 'review' | 'system' | 'payment'
 
 ### Schema File
 
-Full details: [database/glowery_db_schema.sql](./database/glowery_db_schema.sql)
+Schema definition: [prisma/schema.prisma](./prisma/schema.prisma)
+
+Database SQL: [database/glowery_db_schema.sql](./database/glowery_db_schema.sql)
+
+### Prisma Commands
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Create migration
+npx prisma migrate dev --name your_migration_name
+
+# Apply migrations
+npx prisma migrate deploy
+
+# Reset database
+npx prisma migrate reset
+
+# Open Prisma Studio (Database GUI)
+npx prisma studio
+```
 
 ---
 
@@ -564,13 +739,15 @@ Details: [docs/Commit-Guide.md](./docs/Commit-Guide.md)
 ### Code Style
 
 - Use **TypeScript strict mode**
-- Follow **ESLint** rules (coming soon)
-- Use **Prettier** for formatting (coming soon)
+- Follow **ESLint** rules configured in `eslint.config.js`
+- Use **Prettier** for code formatting
 - Naming conventions:
   - `camelCase` for variables/functions
   - `PascalCase` for classes/interfaces
   - `UPPER_CASE` for constants
   - `kebab-case` for file names
+- Run `npm run lint:fix` before committing
+- Run `npm run format` to format code
 
 ---
 
@@ -578,19 +755,32 @@ Details: [docs/Commit-Guide.md](./docs/Commit-Guide.md)
 
 ```bash
 # Development
-npm run dev          # Run dev server with hot reload
+npm run dev           # Run dev server with hot reload
 
 # Production
-npm run build        # Build TypeScript → JavaScript
-npm run start        # Run production server
+npm run build         # Build TypeScript → JavaScript
+npm run start         # Run production server
 
-# Database
-psql -U postgres -d glowery_db -f database/glowery_db_schema.sql  # Setup schema
-psql -U postgres -d glowery_db -f database/seedData.sql           # Seed data
+# Code Quality
+npm run lint          # Run ESLint
+npm run lint:fix      # Fix ESLint errors
+npm run format        # Format code with Prettier
+
+# Prisma
+npx prisma generate   # Generate Prisma Client
+npx prisma migrate dev # Create and apply migration
+npx prisma migrate deploy # Apply migrations (production)
+npx prisma studio     # Open Prisma Studio GUI
+
+# Database (SQL Scripts)
+# Setup schema
+psql -U postgres -d glowery_db -f database/glowery_db_schema.sql
+# Seed data
+psql -U postgres -d glowery_db -f database/seedData.sql
 
 # Testing (Coming soon)
-npm run test         # Run tests
-npm run test:watch   # Run tests in watch mode
+npm run test          # Run tests
+npm run test:watch    # Run tests in watch mode
 npm run test:coverage # Generate coverage report
 ```
 
@@ -605,17 +795,13 @@ npm run test:coverage # Generate coverage report
 PORT=8000                          # Server port
 NODE_ENV=development               # Environment: development | production
 
-# Database Configuration
-DB_HOST=localhost                  # Database host
-DB_PORT=5432                       # Database port
-DB_USER=postgres                   # Database username
-DB_PASSWORD=your_password          # Database password
-DB_NAME=glowery_db                 # Database name
+# Database Configuration (Prisma)
+DATABASE_URL="postgresql://user:password@localhost:5432/glowery_db?schema=public"
 
 # JWT Configuration
-JWT_SECRET=your_jwt_secret         # JWT signing secret
+JWT_SECRET=your_jwt_secret         # JWT signing secret (min 32 chars)
 JWT_EXPIRES_IN=7d                  # Access token expiry
-JWT_REFRESH_SECRET=refresh_secret  # Refresh token secret
+JWT_REFRESH_SECRET=refresh_secret  # Refresh token secret (min 32 chars)
 JWT_REFRESH_EXPIRES_IN=30d         # Refresh token expiry
 
 # Email Service (Resend)
@@ -623,7 +809,7 @@ RESEND_API_KEY=your_resend_key    # Resend API key
 FROM_EMAIL=noreply@domain.com      # Sender email
 
 # Client Configuration
-CLIENT_URL=http://localhost:3000   # Frontend URL
+CLIENT_URL=http://localhost:3000   # Frontend URL (for CORS & emails)
 ```
 
 ### Optional Variables
@@ -637,9 +823,19 @@ UPLOAD_DIR=./uploads               # Upload directory
 RATE_LIMIT_WINDOW=15               # Minutes
 RATE_LIMIT_MAX_REQUESTS=100        # Max requests per window
 
-# Logging (Coming soon)
+# Logging
 LOG_LEVEL=info                     # error | warn | info | debug
+
+# Prisma
+PRISMA_QUERY_LOG=false             # Enable query logging
 ```
+
+### Notes
+
+- Keep `.env` file secure and never commit it to version control
+- Use strong, random secrets for JWT keys (minimum 32 characters)
+- Update `CLIENT_URL` to match your frontend URL
+- For production, use environment-specific values
 
 ---
 
