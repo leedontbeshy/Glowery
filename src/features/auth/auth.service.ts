@@ -12,7 +12,7 @@ import { LoginDTO, RegisterDTO } from './auth.dto';
 
 
 export class AuthService {
-    static async register(data: RegisterDTO) {
+    static async register(data: RegisterDTO):Promise<void> {
         const parsed = registerSchema.safeParse(data);
         if (!parsed.success) {
             throw new Error(parsed.error.issues[0].message);
@@ -27,7 +27,7 @@ export class AuthService {
 
         const hashedPassword = await hashPassword(password);
 
-        const user = await UserRepository.create({
+        await UserRepository.create({
             email,
             username,
             password: hashedPassword,
@@ -36,7 +36,6 @@ export class AuthService {
             phone,
         });
 
-        return user;
     }
 
     static async login(data: LoginDTO) {
