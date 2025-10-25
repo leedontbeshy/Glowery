@@ -1,5 +1,5 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
-import { signAccessToken,signRefreshToken } from '@/common/utils/jwt';
+import { signAccessToken,signRefreshToken, verifyRefreshToken } from '@/common/utils/jwt';
 import { registerSchema, loginSchema } from '@/features/users/user.schema';
 import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
@@ -8,7 +8,8 @@ import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from
 
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
-import { LoginDTO, RegisterDTO } from './auth.dto';
+import { LoginDTO, RegisterDTO, RefreshTokenDTO } from './auth.dto';
+import { refreshTokenSchema } from './auth.schema';
 
 
 export class AuthService {
@@ -112,7 +113,7 @@ export class AuthService {
 
         const hasOldToken = await TokenRepository.checkResetToken(email);
         if (hasOldToken) {
-            await TokenRepository.deleteExistedToken(email);
+            await TokenRepository.deleteExistedResetToken(email);
         }
         const data = await ResetTokenService.createNewResetToken(); //generate resettoken
 
@@ -120,7 +121,6 @@ export class AuthService {
 
         await sendResetPasswordEmail(email, data.resetToken);
 
-        
         return data;
     }
 
@@ -129,12 +129,50 @@ export class AuthService {
         if (!parsed.success) {
             throw new BadRequestError(parsed.error.issues[0].message);
         }
-        const data = await TokenRepository.findValidToken(resetToken);
+        const data = await TokenRepository.findValidResetToken(resetToken);
         if (!data) {
             throw new UnauthorizedError('Invalid or expired reset token');
         }
         const hashedPassword = await hashPassword(newPassword);
         await UserRepository.updatePasswordById(data.id, hashedPassword);
-        await TokenRepository.deleteExistedToken(data.email);
+        await TokenRepository.deleteExistedResetToken(data.email);
     }
+
+    static async refreshAccessToken(data: RefreshTokenDTO): Promise<{ accessToken: string }> {
+        const parsed = refreshTokenSchema.safeParse(data);
+        if (!parsed.success) {
+            throw new BadRequestError(parsed.error.issues[0].message);
+        }
+
+        const { refreshToken } = parsed.data;
+
+        let decoded;
+        try {
+            decoded = verifyRefreshToken(refreshToken);
+        } catch {
+            throw new UnauthorizedError('Invalid or expired refresh token');
+        }
+
+        const isValidRefreshToken = await TokenRepository.findValidRefreshToken(refreshToken);
+        if (!isValidRefreshToken) {
+            throw new UnauthorizedError('Invalid or expired refresh token');
+        }
+
+        const isBlacklisted = await TokenRepository.isBlacklisted(refreshToken);
+        if (isBlacklisted) {
+            throw new UnauthorizedError('Refresh token has been revoked');
+        }
+
+        const newAccessToken = signAccessToken(
+            {
+                id: decoded.id,
+                email: decoded.email,
+                role: decoded.role,
+            },
+            process.env.JWT_ACCESS_EXPIRES_IN as string,
+        );
+
+        return { accessToken: newAccessToken };
+    }
+
 }

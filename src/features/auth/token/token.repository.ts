@@ -60,8 +60,33 @@ export class TokenRepository {
     });
 
     return true;
+  };
+
+  static async findValidRefreshToken(token: string): Promise<boolean> {
+    const now = new Date();
+
+    const [refreshToken, blacklisted] = await Promise.all([
+      prisma.refresh_tokens.findUnique({
+        where: { 
+          token,
+        },
+      }),
+      prisma.blacklisted_tokens.findUnique({
+        where: { token },
+      }),
+    ]);
+
+    // Check all conditions: token exists, not revoked, not expired, not blacklisted
+    return (
+      !!refreshToken &&
+      !refreshToken.is_revoked &&
+      refreshToken.expires_at > now &&
+      !blacklisted
+    );
   }
 
+
+  //Blacklisted_token
   static async isBlacklisted(token: string): Promise<boolean> {
     const result = await prisma.blacklisted_tokens.findUnique({
       where: { token },
@@ -77,8 +102,9 @@ export class TokenRepository {
     });
   }
 
+
   //Reset Token
-  static async deleteExistedToken(email: string): Promise<void> {
+  static async deleteExistedResetToken(email: string): Promise<void> {
     await prisma.reset_tokens.deleteMany({
       where: { email },
     });
@@ -95,7 +121,7 @@ export class TokenRepository {
         token,
         expires_at: expiresAt,
         created_at: new Date(),
-        user_id: userId
+        user_id: userId,
       },
     });
   }
@@ -107,7 +133,7 @@ export class TokenRepository {
     return !!result;
   }
 
-  static async findValidToken(
+  static async findValidResetToken(
     token: string
   ): Promise<{ id: number; email: string } | null> {
     // JOIN logic <=> JOIN reset_tokens rt ON users.email = rt.email

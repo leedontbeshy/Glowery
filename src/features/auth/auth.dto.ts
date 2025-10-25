@@ -6,7 +6,8 @@ import {
     loginSchema, 
     resetPasswordRequestSchema, 
     resetPasswordSchema, 
-    verifyEmailSchema 
+    verifyEmailSchema,
+    refreshTokenSchema
 } from "./auth.schema";
 
 export type RegisterDTO = z.infer<typeof registerSchema>;
@@ -15,3 +16,4 @@ export type LoginDTO = z.infer<typeof loginSchema>
 export type ResetPasswordRequestDTO = z.infer<typeof resetPasswordRequestSchema>;
 export type ResetPasswordDTO = z.infer<typeof resetPasswordSchema>;
 export type VerifyEmailDTO = z.infer<typeof verifyEmailSchema>;
+export type RefreshTokenDTO = z.infer<typeof refreshTokenSchema>;
