@@ -77,8 +77,16 @@ export class TokenRepository {
     });
   }
 
+  
+
+
+
+
+
+
+
   //Reset Token
-  static async deleteExistedToken(email: string): Promise<void> {
+  static async deleteExistedResetToken(email: string): Promise<void> {
     await prisma.reset_tokens.deleteMany({
       where: { email },
     });
@@ -95,7 +103,7 @@ export class TokenRepository {
         token,
         expires_at: expiresAt,
         created_at: new Date(),
-        user_id: userId
+        user_id: userId,
       },
     });
   }
@@ -107,7 +115,7 @@ export class TokenRepository {
     return !!result;
   }
 
-  static async findValidToken(
+  static async findValidResetToken(
     token: string
   ): Promise<{ id: number; email: string } | null> {
     // JOIN logic <=> JOIN reset_tokens rt ON users.email = rt.email

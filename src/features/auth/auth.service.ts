@@ -112,7 +112,7 @@ export class AuthService {
 
         const hasOldToken = await TokenRepository.checkResetToken(email);
         if (hasOldToken) {
-            await TokenRepository.deleteExistedToken(email);
+            await TokenRepository.deleteExistedResetToken(email);
         }
         const data = await ResetTokenService.createNewResetToken(); //generate resettoken
 
@@ -129,12 +129,14 @@ export class AuthService {
         if (!parsed.success) {
             throw new BadRequestError(parsed.error.issues[0].message);
         }
-        const data = await TokenRepository.findValidToken(resetToken);
+        const data = await TokenRepository.findValidResetToken(resetToken);
         if (!data) {
             throw new UnauthorizedError('Invalid or expired reset token');
         }
         const hashedPassword = await hashPassword(newPassword);
         await UserRepository.updatePasswordById(data.id, hashedPassword);
-        await TokenRepository.deleteExistedToken(data.email);
+        await TokenRepository.deleteExistedResetToken(data.email);
     }
+
+
 }
