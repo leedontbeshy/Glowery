@@ -69,4 +69,17 @@ export const AuthController = {
             return handleControllerError(error, res, 'resetPassword')
         }
     },
+
+    async refreshToken(req: Request, res: Response) {
+        try {
+            const result = await AuthService.refreshAccessToken(req.body);
+            return res.status(200).json({
+                success: true,
+                message: 'Access token refreshed successfully',
+                accessToken: result.accessToken,
+            });
+        } catch (error: any) {
+            return handleControllerError(error, res, 'refreshToken');
+        }
+    },
 };

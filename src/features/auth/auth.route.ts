@@ -18,4 +18,7 @@ router.post('/reset-password', AuthController.forgetPassword);
 
 router.post('/reset-password/confirm', AuthController.resetPassword);
 
+// POST /api/auth/refresh-token
+router.post('/refresh-token', AuthController.refreshToken);
+
 export default router;
