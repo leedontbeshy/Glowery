@@ -42,6 +42,14 @@ export class ProductRepository {
         return count;
     };
 
+    static async getProductDetailById(productId: number):Promise<ProductBasic | null>{
+        const product = prisma.products.findUnique({
+            where: {id: productId},
+            select: productBasicSelect,
+        });
+        return product;
+    }
+
 
 
 }

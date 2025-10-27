@@ -1,6 +1,4 @@
-import { Prisma } from "@prisma/client";
-
-export const productBasicSelect = {
+const productBasicSelect = {
   name: true,
   slug: true,
   description: true,
@@ -12,5 +10,3 @@ export const productBasicSelect = {
   view_count: true,
   sold_count: true,
 } as const;
-
-export type ProductBasic = Prisma.Payload<typeof productBasicSelect>;
