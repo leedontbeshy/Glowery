@@ -1,7 +1,13 @@
 export type UserRole = 'user' | 'seller' | 'admin';
 export type UserStatus = 'active' | 'inactive' | 'suspended';
 
-export type ProductStatus = 'active' | 'inactive' | 'out_of_stock';
+export enum ProductStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  OUT_OF_STOCK = 'out_of_stock'
+}
+
+export type ProductStatusType = 'active' | 'inactive' | 'out_of_stock';
 
 export type OrderStatus =
     | 'pending'
