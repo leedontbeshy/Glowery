@@ -39,7 +39,7 @@ export class ProductRepository {
       sku: product.sku ?? undefined,
       view_count: product.view_count ?? undefined,
       sold_count: product.sold_count ?? undefined,
-      status: product.status as ProductStatus | undefined,
+      status: product.status as ProductStatus,
     }));
   }
 
@@ -51,7 +51,7 @@ export class ProductRepository {
   static async getProductDetailById(
     productId: number
   ): Promise<ProductBasic | null> {
-    const product = prisma.products.findUnique({
+    const product = await prisma.products.findUnique({
       where: { id: productId },
       select: {
         name: true,
@@ -66,7 +66,21 @@ export class ProductRepository {
         sold_count: true,
       },
     });
-    return product;
+    
+    if (!product) return null;
+    
+    return {
+      name: product.name,
+      slug: product.slug,
+      description: product.description ?? undefined,
+      price: product.price,
+      discount_price: product.discount_price ?? undefined,
+      quantity: product.quantity ?? undefined,
+      sku: product.sku ?? undefined,
+      status: product.status as ProductStatus,
+      view_count: product.view_count ?? undefined,
+      sold_count: product.sold_count ?? undefined,
+    };
   }
 
     static async createProduct(data: CreateProductDTO): Promise<Product> {

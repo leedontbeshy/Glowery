@@ -1,16 +1,16 @@
-import { Prisma } from "@prisma/client";
+import { Product } from "./product.model";
 
-export const productBasicSelect = {
-  name: true,
-  slug: true,
-  description: true,
-  price: true,
-  discount_price: true,
-  quantity: true,
-  sku: true,
-  status: true,
-  view_count: true,
-  sold_count: true,
-} as const;
 
-export type ProductBasic = Prisma.Payload<typeof productBasicSelect>;
+export type ProductBasic = Pick<
+  Product,
+  | 'name'
+  | 'slug'
+  | 'description'
+  | 'price'
+  | 'discount_price'
+  | 'quantity'
+  | 'sku'
+  | 'status'
+  | 'view_count'
+  | 'sold_count'
+>;
