@@ -3,6 +3,8 @@ import { NotFoundError } from "@/common/errors/ApiError";
 
 import { ProductRepository } from "./product.repository";
 import { ProductBasic } from "./product.type";
+import { CreateProductDTO } from "./product.dto";
+import { Product } from "./product.model";
 
 
 export class ProductService{
@@ -39,6 +41,10 @@ export class ProductService{
         return product;
     }
 
+    static async createProduct(productData: CreateProductDTO):Promise<Product>{
+        const data = await ProductRepository.createProduct(productData);
+        if(!data || !productData) throw new NotFoundError('Product info not found!')
+        return data;
+    }
 
-    
 }
