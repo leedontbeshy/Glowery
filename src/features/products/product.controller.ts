@@ -10,7 +10,7 @@ export const ProductController = {
     async getAllProduct(req: Request, res: Response) {
         try {
             const result = await ProductService.getAllProduct(req.query);
-                res.status(200).json({
+            return res.status(200).json({
                 message: "Fetched products successfully",
                 result
             })

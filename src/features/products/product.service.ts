@@ -6,31 +6,39 @@ import { ProductBasic } from "./product.type";
 
 
 export class ProductService{
-    static async getAllProduct(queryParams: any):Promise<PaginatedProducts>{
-        
-        const { page = 1, limit = 20 } = queryParams;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
+    static async getAllProduct(queryParams: any): Promise<PaginatedProducts> {
 
-        const products = await ProductRepository.getAllProduct(parseInt(limit), offset);
-        const totalProducts = await ProductRepository.getTotalProductCount();
-                
-        const totalPages = Math.ceil(totalProducts/ parseInt(limit));
+        const page = Math.max(1, parseInt(queryParams.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(queryParams.limit) || 20));
+
+        const offset = (page - 1) * limit;
+
+        const [products, totalProducts] = await Promise.all([
+            ProductRepository.getAllProduct(limit, offset),
+            ProductRepository.getTotalProductCount()
+        ]);
+
+        const totalPages = Math.ceil(totalProducts / limit);
+        
         return {
             products,
-            pagination:{
-                currentPage: parseInt(page),
+            pagination: {
+                currentPage: page,
                 totalPages,
                 totalProducts,
-                productsPerPage: parseInt(limit),
-                hasNext: parseInt(page) < totalPages,
-                hasPrev: parseInt(page) > 1,
+                productsPerPage: limit,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
             }
-        }
-    };
+        };
+    }
 
     static async getProductDetailById(productId: number):Promise<ProductBasic>{
         const product = await ProductRepository.getProductDetailById(productId);
         if(!product) throw new NotFoundError('Product does not exist');
         return product;
     }
+
+
+    
 }
