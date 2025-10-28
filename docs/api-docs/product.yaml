@@ -1,0 +1,504 @@
+paths:
+  /api/products/all-products:
+    get:
+      summary: Get all products with pagination
+      description: Retrieve a paginated list of all products. This endpoint is public and does not require authentication.
+      tags:
+        - Products
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of products per page (max 100)
+          example: 20
+      responses:
+        200:
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Fetched products successfully
+                  result:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: Product name
+                              example: Wireless Headphones
+                            slug:
+                              type: string
+                              description: URL-friendly product identifier
+                              example: wireless-headphones
+                            description:
+                              type: string
+                              nullable: true
+                              description: Product description
+                              example: High-quality wireless headphones with noise cancellation
+                            price:
+                              type: number
+                              description: Product price (Decimal)
+                              example: 1500000
+                            discount_price:
+                              type: number
+                              nullable: true
+                              description: Discounted price if applicable
+                              example: 1200000
+                            quantity:
+                              type: integer
+                              nullable: true
+                              description: Available stock quantity
+                              example: 50
+                            sku:
+                              type: string
+                              nullable: true
+                              description: Stock Keeping Unit
+                              example: WH-1000XM4
+                            view_count:
+                              type: integer
+                              nullable: true
+                              description: Number of views
+                              example: 120
+                            sold_count:
+                              type: integer
+                              nullable: true
+                              description: Number of units sold
+                              example: 25
+                            status:
+                              type: string
+                              enum: [active, inactive, out_of_stock]
+                              description: Product status
+                              example: active
+                      pagination:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                            example: 1
+                          limit:
+                            type: integer
+                            example: 20
+                          total:
+                            type: integer
+                            description: Total number of products
+                            example: 150
+                          totalPages:
+                            type: integer
+                            description: Total number of pages
+                            example: 8
+        400:
+          description: Bad request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid pagination parameters
+
+  /api/products/{id}:
+    get:
+      summary: Get product details by ID
+      description: Retrieve detailed information of a specific product by its ID. This endpoint is public and does not require authentication.
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Product ID
+          example: 1
+      responses:
+        200:
+          description: Product details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product fetched successfully
+                  result:
+                    type: object
+                    nullable: true
+                    properties:
+                      name:
+                        type: string
+                        description: Product name
+                        example: Wireless Headphones
+                      slug:
+                        type: string
+                        description: URL-friendly product identifier
+                        example: wireless-headphones
+                      description:
+                        type: string
+                        nullable: true
+                        description: Product description
+                        example: High-quality wireless headphones with noise cancellation
+                      price:
+                        type: number
+                        description: Product price (Decimal)
+                        example: 1500000
+                      discount_price:
+                        type: number
+                        nullable: true
+                        description: Discounted price if applicable
+                        example: 1200000
+                      quantity:
+                        type: integer
+                        nullable: true
+                        description: Available stock quantity
+                        example: 50
+                      sku:
+                        type: string
+                        nullable: true
+                        description: Stock Keeping Unit
+                        example: WH-1000XM4
+                      status:
+                        type: string
+                        enum: [active, inactive, out_of_stock]
+                        description: Product status
+                        example: active
+                      view_count:
+                        type: integer
+                        nullable: true
+                        description: Number of views
+                        example: 120
+                      sold_count:
+                        type: integer
+                        nullable: true
+                        description: Number of units sold
+                        example: 25
+        400:
+          description: Bad request - Invalid product ID or product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Invalid or missing product ID
+              examples:
+                invalidId:
+                  summary: Invalid product ID format
+                  value:
+                    success: false
+                    error: Invalid or missing product ID
+                productNotFound:
+                  summary: Product does not exist
+                  value:
+                    success: false
+                    error: Product not found
+
+  /api/products:
+    post:
+      summary: Create a new product
+      description: Create a new product in the system. This endpoint requires authentication and seller/admin role.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - slug
+                - price
+                - seller_id
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: Product name (1-200 characters)
+                  example: Wireless Headphones
+                slug:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  pattern: '^[a-z0-9-]+$'
+                  description: URL-friendly identifier (lowercase letters, numbers, and hyphens only)
+                  example: wireless-headphones
+                description:
+                  type: string
+                  nullable: true
+                  description: Detailed product description
+                  example: Premium wireless headphones with active noise cancellation, 30-hour battery life, and superior sound quality
+                price:
+                  type: number
+                  minimum: 0
+                  description: Product price (must be positive)
+                  example: 1500000
+                discount_price:
+                  type: number
+                  minimum: 0
+                  nullable: true
+                  description: Discounted price (must be positive if provided)
+                  example: 1200000
+                quantity:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  description: Initial stock quantity (non-negative)
+                  example: 100
+                sku:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  description: Stock Keeping Unit (max 100 characters)
+                  example: WH-1000XM4
+                category_id:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                  description: Category ID (must be positive if provided)
+                  example: 5
+                seller_id:
+                  type: integer
+                  minimum: 1
+                  description: Seller ID (required, must be positive)
+                  example: 42
+                status:
+                  type: string
+                  enum: [active, inactive, out_of_stock]
+                  default: active
+                  description: Product status
+                  example: active
+      responses:
+        201:
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product created successfully
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: Product ID
+                        example: 123
+                      name:
+                        type: string
+                        example: Wireless Headphones
+                      slug:
+                        type: string
+                        example: wireless-headphones
+                      description:
+                        type: string
+                        nullable: true
+                        example: Premium wireless headphones with active noise cancellation
+                      price:
+                        type: number
+                        example: 1500000
+                      discount_price:
+                        type: number
+                        nullable: true
+                        example: 1200000
+                      quantity:
+                        type: integer
+                        example: 100
+                      sku:
+                        type: string
+                        nullable: true
+                        example: WH-1000XM4
+                      category_id:
+                        type: integer
+                        nullable: true
+                        example: 5
+                      seller_id:
+                        type: integer
+                        example: 42
+                      status:
+                        type: string
+                        enum: [active, inactive, out_of_stock]
+                        example: active
+                      view_count:
+                        type: integer
+                        example: 0
+                      sold_count:
+                        type: integer
+                        example: 0
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2025-10-28T10:30:00.000Z"
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: "2025-10-28T10:30:00.000Z"
+                      deleted_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        example: null
+        400:
+          description: Bad request - Validation error or slug already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Slug already exists
+              examples:
+                validationError:
+                  summary: Validation failed
+                  value:
+                    success: false
+                    error: Product name is required
+                slugExists:
+                  summary: Slug already in use
+                  value:
+                    success: false
+                    error: Slug already exists
+                invalidPrice:
+                  summary: Invalid price
+                  value:
+                    success: false
+                    error: Price must be a valid positive number
+        401:
+          description: Unauthorized - Missing or invalid authentication token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Authentication required
+        403:
+          description: Forbidden - User does not have permission to create products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: Insufficient permissions
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login endpoint
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique product identifier
+        name:
+          type: string
+          description: Product name
+        slug:
+          type: string
+          description: URL-friendly product identifier
+        description:
+          type: string
+          nullable: true
+          description: Product description
+        price:
+          type: number
+          description: Product price
+        discount_price:
+          type: number
+          nullable: true
+          description: Discounted price
+        quantity:
+          type: integer
+          nullable: true
+          description: Available stock
+        sku:
+          type: string
+          nullable: true
+          description: Stock Keeping Unit
+        category_id:
+          type: integer
+          nullable: true
+          description: Category ID
+        seller_id:
+          type: integer
+          description: Seller ID
+        status:
+          type: string
+          enum: [active, inactive, out_of_stock]
+          description: Product status
+        view_count:
+          type: integer
+          nullable: true
+          description: Number of views
+        sold_count:
+          type: integer
+          nullable: true
+          description: Number of units sold
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deletion timestamp (soft delete)
