@@ -52,7 +52,7 @@ export const productSchema = z.object({
   deleted_at: z.date().nullable().optional(),
 });
 
-// Schema cho create (bỏ các field auto-generated)
+// Schema for create (omitting auto-generated fields)
 export const createProductSchema = productSchema.omit({
   id: true,
   view_count: true,
