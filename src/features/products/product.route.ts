@@ -7,6 +7,7 @@ import { ProductController } from "./product.controller";
 const router = Router();
 
 router.get('/all-products', ProductController.getAllProduct);
-router.get('/:id', ProductController.getProductById)
+router.get('/:id', ProductController.getProductById);
+router.post('/', authMiddleware, ProductController.createProduct);
 
 export default router;

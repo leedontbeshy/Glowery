@@ -1,5 +1,6 @@
-import z from "zod";
+import { z } from "zod";
 
-import { productSchema } from "./product.schema";
+import { productSchema, createProductSchema } from "./product.schema";
 
-export type CreateProductDTO = z.infer<typeof productSchema>;
+export type ProductDTO = z.infer<typeof productSchema>;
+export type CreateProductDTO = z.infer<typeof createProductSchema>;

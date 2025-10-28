@@ -1,9 +1,10 @@
+import { Decimal } from "@prisma/client/runtime/library";
+
 import { prisma } from "@/common/db/prisma";
 import { ProductStatus } from "@/common/constants/user.enums";
 
 import { ProductBasic } from "./product.type";
 import { CreateProductDTO } from "./product.dto";
-
 import { Product } from "./product.model";
 
 export class ProductRepository {
@@ -68,22 +69,29 @@ export class ProductRepository {
     return product;
   }
 
-  static async createProduct(data: CreateProductDTO): Promise<Product> {
+    static async createProduct(data: CreateProductDTO): Promise<Product> {
     const product = await prisma.products.create({
       data: {
-        id: data.id,
         name: data.name,
         slug: data.slug,
-        description: data.description,
-        price: data.price,
-        discount_price: data.discount_price,
-        quantity: data.quantity,
-        sku: data.sku,
-        category_id: data.category_id,
+        description: data.description ?? null,
+        price: new Decimal(data.price),
+        discount_price: data.discount_price ? new Decimal(data.discount_price) : null,
+        quantity: data.quantity ?? 0,
+        sku: data.sku ?? null,
+        category_id: data.category_id ?? null,
         seller_id: data.seller_id,
         status: data.status,
       },
     });
-    return product;
+    return product as Product;
   }
-}
+
+  static async checkSlugExists(slug: string): Promise<boolean> {
+    const count = await prisma.products.count({
+      where: { slug },
+    });
+    return count > 0;
+  }
+  }
+

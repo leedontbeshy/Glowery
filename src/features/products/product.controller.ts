@@ -33,5 +33,15 @@ export const ProductController = {
         } catch (error) {   
             return handleControllerError(error, res, 'getProductDetailById')
         }
+    },
+
+    async createProduct(req: Request, res: Response) {
+        try {
+            const productData = req.body;
+            const result = await ProductService.createProduct(productData);
+            return sendSuccess(res, result, "Product created successfully", 201);
+        } catch (error) {
+            return handleControllerError(error, res, 'createProduct');
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/library";
 
-import { product_status } from "generated/prisma";
+import { ProductStatus } from "@/common/constants/user.enums";
 
 export interface Product {
   id: number;
@@ -13,10 +13,10 @@ export interface Product {
   sku?: string | null;
   category_id?: number | null;
   seller_id?: number | null;
-  status?: product_status | null;
+  status: ProductStatus;
   view_count?: number | null;
   sold_count?: number | null;
-  created_at?: Date | null;
-  updated_at?: Date | null;
+  created_at: Date;
+  updated_at: Date;
   deleted_at?: Date | null;
 }
