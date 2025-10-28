@@ -1,6 +1,9 @@
 import { PaginatedProducts } from "@/common/types/pagination.type";
+import { NotFoundError } from "@/common/errors/ApiError";
 
 import { ProductRepository } from "./product.repository";
+import { ProductBasic } from "./product.type";
+
 
 export class ProductService{
     static async getAllProduct(queryParams: any):Promise<PaginatedProducts>{
@@ -23,5 +26,11 @@ export class ProductService{
                 hasPrev: parseInt(page) > 1,
             }
         }
+    };
+
+    static async getProductDetailById(productId: number):Promise<ProductBasic>{
+        const product = await ProductRepository.getProductDetailById(productId);
+        if(!product) throw new NotFoundError('Product does not exist');
+        return product;
     }
 }
