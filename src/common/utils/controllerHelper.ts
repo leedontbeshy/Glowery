@@ -4,7 +4,7 @@ import { ApiError } from '../errors/ApiError';
 import { handleDatabaseError } from '../errors/databaseErrorHandler';
 
 export function handleControllerError(error: any, res: Response, context?: string) {
-    // 1.  ApiError (custom errors from Service)
+    // 1. ApiError (custom errors from Service)
     if (error instanceof ApiError) {
         return res.status(error.statusCode).json({
             success: false,
@@ -12,15 +12,17 @@ export function handleControllerError(error: any, res: Response, context?: strin
         });
     }
 
-    // 2. Database Error
-    if (error.code) {
+    // 2. Database Error (PostgreSQL)
+    if (error.code && typeof error.code === 'string') {
         try {
             handleDatabaseError(error, context);
-        } catch (apiError: any) {
-            return res.status(apiError.statusCode).json({
-                success: false,
-                message: apiError.message,
-            });
+        } catch (apiError) {
+            if (apiError instanceof ApiError) {
+                return res.status(apiError.statusCode).json({
+                    success: false,
+                    message: apiError.message,
+                });
+            }
         }
     }
 
