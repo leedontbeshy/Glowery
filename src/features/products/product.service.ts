@@ -40,15 +40,11 @@ export class ProductService {
     }
 
     static async createProduct(productData: CreateProductDTO): Promise<Product> {
-        // Data already validated by middleware
-        
-        // Business logic validation: Check slug uniqueness
         const slugExists = await ProductRepository.checkSlugExists(productData.slug);
         if (slugExists) {
             throw new BadRequestError(`Product with slug "${productData.slug}" already exists`);
         }
 
-        // Business logic validation: Validate discount price
         if (productData.discount_price && productData.discount_price >= productData.price) {
             throw new BadRequestError("Discount price must be less than regular price");
         }

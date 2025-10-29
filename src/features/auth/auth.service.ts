@@ -1,19 +1,16 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
 import { signAccessToken,signRefreshToken, verifyRefreshToken } from '@/common/utils/jwt';
 import { UserRepository } from '@/features/users/user.repository';
-import { basePasswordSchema } from '@/common/schemas/common.schema';
 import { sendResetPasswordEmail } from '@/common/utils/email';
-import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from '@/common/errors/ApiError';
+import { ConflictError, NotFoundError, UnauthorizedError } from '@/common/errors/ApiError';
 
 import { TokenRepository } from './token/token.repository';
 import { ResetTokenService } from './token/token.service';
 import { LoginDTO, RegisterDTO, RefreshTokenDTO } from './auth.dto';
-import { refreshTokenSchema } from './auth.schema';
 
 
 export class AuthService {
     static async register(data: RegisterDTO):Promise<void> {
-        // Data already validated by middleware
         const { email, password, username, full_name, phone, address } = data;
 
         // Business logic validation: Check if email exists
@@ -36,7 +33,6 @@ export class AuthService {
     }
 
     static async login(data: LoginDTO) {
-        // Data already validated by middleware
         const { email, password } = data;
 
         // Find user
@@ -116,26 +112,18 @@ export class AuthService {
     }
 
     static async resetPassword(resetToken: string, newPassword: string) {
-        const parsed = basePasswordSchema.safeParse(newPassword);
-        if (!parsed.success) {
-            throw new BadRequestError(parsed.error.issues[0].message);
-        }
         const data = await TokenRepository.findValidResetToken(resetToken);
         if (!data) {
             throw new UnauthorizedError('Invalid or expired reset token');
         }
+        
         const hashedPassword = await hashPassword(newPassword);
         await UserRepository.updatePasswordById(data.id, hashedPassword);
         await TokenRepository.deleteExistedResetToken(data.email);
     }
 
     static async refreshAccessToken(data: RefreshTokenDTO): Promise<{ accessToken: string }> {
-        const parsed = refreshTokenSchema.safeParse(data);
-        if (!parsed.success) {
-            throw new BadRequestError(parsed.error.issues[0].message);
-        }
-
-        const { refreshToken } = parsed.data;
+        const { refreshToken } = data;
 
         let decoded;
         try {
