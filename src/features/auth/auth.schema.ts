@@ -53,7 +53,7 @@ export const resetPasswordSchema = z
     .object({
         token: tokenSchema,
         new_password: basePasswordSchema,
-        confirm_password: z.string().trim(),
+        confirm_password: basePasswordSchema,
     })
     .refine((data) => data.new_password === data.confirm_password, {
         message: "Passwords don't match",
@@ -70,6 +70,6 @@ export const verifyEmailSchema = z
 
 export const refreshTokenSchema = z
     .object({
-        refreshToken: z.string().trim().min(1, 'Refresh token is required'),
+        refresh_token: z.string().trim().min(1, 'Refresh token is required'),
     })
     .strict();

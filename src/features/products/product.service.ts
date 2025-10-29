@@ -5,7 +5,6 @@ import { ProductRepository } from "./product.repository";
 import { ProductBasic } from "./product.type";
 import { CreateProductDTO } from "./product.dto";
 import { Product } from "./product.model";
-import { createProductSchema } from "./product.schema";
 
 export class ProductService {
     static async getAllProduct(queryParams: any): Promise<PaginatedProducts> {
@@ -41,21 +40,16 @@ export class ProductService {
     }
 
     static async createProduct(productData: CreateProductDTO): Promise<Product> {
-        // Validate data
-        const validatedData = createProductSchema.parse(productData);
-
-        // Check slug uniqueness
-        const slugExists = await ProductRepository.checkSlugExists(validatedData.slug);
+        const slugExists = await ProductRepository.checkSlugExists(productData.slug);
         if (slugExists) {
-            throw new BadRequestError(`Product with slug "${validatedData.slug}" already exists`);
+            throw new BadRequestError(`Product with slug "${productData.slug}" already exists`);
         }
 
-        // Validate discount price
-        if (validatedData.discount_price && validatedData.discount_price >= validatedData.price) {
+        if (productData.discount_price && productData.discount_price >= productData.price) {
             throw new BadRequestError("Discount price must be less than regular price");
         }
 
-        const product = await ProductRepository.createProduct(validatedData);
+        const product = await ProductRepository.createProduct(productData);
         return product;
     }
 }
