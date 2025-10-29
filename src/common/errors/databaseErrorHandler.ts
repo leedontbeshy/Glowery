@@ -11,7 +11,7 @@ const PG_ERROR_CODES = {
     INVALID_TEXT_REPRESENTATION: '22P02',
 } as const;
 
-//  error codes
+// Prisma error codes
 const PRISMA_ERROR_CODES = {
     UNIQUE_CONSTRAINT: 'P2002',
     FOREIGN_KEY_CONSTRAINT: 'P2003',
