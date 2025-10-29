@@ -11,7 +11,7 @@ const PG_ERROR_CODES = {
     INVALID_TEXT_REPRESENTATION: '22P02',
 } as const;
 
-// ✅ Thêm Prisma error codes
+//  error codes
 const PRISMA_ERROR_CODES = {
     UNIQUE_CONSTRAINT: 'P2002',
     FOREIGN_KEY_CONSTRAINT: 'P2003',
@@ -24,7 +24,7 @@ export function handleDatabaseError(error: unknown, context?: string): never {
         console.error(`Database Error${context ? ` in ${context}` : ''}:`, error);
     }
 
-    // ✅ Handle Prisma errors
+    // Handle Prisma errors
     if (error instanceof PrismaClientKnownRequestError) {
         switch (error.code) {
             case PRISMA_ERROR_CODES.UNIQUE_CONSTRAINT:

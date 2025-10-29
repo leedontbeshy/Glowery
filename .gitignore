@@ -47,6 +47,7 @@ docs/flow/
 docs/Branching_Rules.md
 docs/Commit-Guide.md
 
+docs/error-handling
 
 .claude
 /src/generated/prisma
