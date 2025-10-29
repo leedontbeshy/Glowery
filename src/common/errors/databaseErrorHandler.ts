@@ -1,7 +1,7 @@
 import { DatabaseError as PgError } from 'pg';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { BadRequestError, ConflictError, DatabaseError, InternalServerError } from './ApiError';
-
 
 const PG_ERROR_CODES = {
     UNIQUE_VIOLATION: '23505',
@@ -11,11 +11,39 @@ const PG_ERROR_CODES = {
     INVALID_TEXT_REPRESENTATION: '22P02',
 } as const;
 
+// ✅ Thêm Prisma error codes
+const PRISMA_ERROR_CODES = {
+    UNIQUE_CONSTRAINT: 'P2002',
+    FOREIGN_KEY_CONSTRAINT: 'P2003',
+    RECORD_NOT_FOUND: 'P2025',
+    REQUIRED_FIELD_MISSING: 'P2012',
+} as const;
 
 export function handleDatabaseError(error: unknown, context?: string): never {
-    // Log the error for debugging (in production, use proper logger)
     if (process.env.NODE_ENV === 'development') {
         console.error(`Database Error${context ? ` in ${context}` : ''}:`, error);
+    }
+
+    // ✅ Handle Prisma errors
+    if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+            case PRISMA_ERROR_CODES.UNIQUE_CONSTRAINT:
+                const target = error.meta?.target as string[] | undefined;
+                const field = target?.[0] || 'field';
+                throw new ConflictError(`${field} already exists`);
+
+            case PRISMA_ERROR_CODES.FOREIGN_KEY_CONSTRAINT:
+                throw new BadRequestError('Invalid reference to related resource');
+
+            case PRISMA_ERROR_CODES.RECORD_NOT_FOUND:
+                throw new BadRequestError('Record not found');
+
+            case PRISMA_ERROR_CODES.REQUIRED_FIELD_MISSING:
+                throw new BadRequestError('Required field is missing');
+
+            default:
+                throw new DatabaseError('Database operation failed');
+        }
     }
 
     // Handle PostgreSQL errors
