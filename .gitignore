@@ -46,7 +46,7 @@ txt/*
 docs/flow/
 docs/Branching_Rules.md
 docs/Commit-Guide.md
-
+docs/validation
 docs/error-handling
 
 .claude

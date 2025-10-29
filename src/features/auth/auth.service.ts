@@ -1,6 +1,5 @@
 import { hashPassword, verifyPassword } from '@/common/utils/hash';
 import { signAccessToken,signRefreshToken, verifyRefreshToken } from '@/common/utils/jwt';
-import { registerSchema, loginSchema } from '@/features/users/user.schema';
 import { UserRepository } from '@/features/users/user.repository';
 import { basePasswordSchema } from '@/common/schemas/common.schema';
 import { sendResetPasswordEmail } from '@/common/utils/email';
@@ -14,13 +13,10 @@ import { refreshTokenSchema } from './auth.schema';
 
 export class AuthService {
     static async register(data: RegisterDTO):Promise<void> {
-        const parsed = registerSchema.safeParse(data);
-        if (!parsed.success) {
-            throw new Error(parsed.error.issues[0].message);
-        }
+        // Data already validated by middleware
+        const { email, password, username, full_name, phone, address } = data;
 
-        const { email, password, username, full_name, phone, address } = parsed.data;
-
+        // Business logic validation: Check if email exists
         const existing = await UserRepository.findUserByEmail(email);
         if (existing) {
             throw new ConflictError('Email already exists');
@@ -40,21 +36,16 @@ export class AuthService {
     }
 
     static async login(data: LoginDTO) {
-        //Validate input
-        const parsed = loginSchema.safeParse(data);
-        if (!parsed.success) {
-            throw new Error(parsed.error.issues[0].message);
-        }
+        // Data already validated by middleware
+        const { email, password } = data;
 
-        //Tim user
-        const { email, password } = parsed.data;
-
+        // Find user
         const user = await UserRepository.findUserByEmail(email);
         if (!user) {
             throw new NotFoundError('Email does not exsit');
         }
 
-        //So sanh pass
+        // Verify password
         const match = await verifyPassword(password, user.password);
         if (!match) {
             throw new UnauthorizedError('Wrong Password');
