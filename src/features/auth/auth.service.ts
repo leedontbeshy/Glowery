@@ -125,7 +125,7 @@ export class AuthService {
     static async refreshAccessToken(data: RefreshTokenDTO): Promise<{ accessToken: string }> {
         const { refresh_token } = data;
 
-        // Verify token signature and expiration
+        // Step 1: Verify JWT signature and expiration
         let decoded;
         try {
             decoded = verifyRefreshToken(refresh_token);
@@ -133,29 +133,13 @@ export class AuthService {
             throw new UnauthorizedError('Invalid or expired refresh token (signature verification failed)');
         }
 
-        // Check if token exists in database
-        const tokenRecord = await TokenRepository.findRefreshTokenRecord(refresh_token);
-        if (!tokenRecord) {
-            throw new UnauthorizedError('Refresh token not found in database');
+        // Step 2: Validate refresh token in database (optimized single query with Promise.all)
+        const validation = await TokenRepository.validateRefreshToken(refresh_token);
+        if (!validation.valid) {
+            throw new UnauthorizedError(validation.reason || 'Invalid refresh token');
         }
 
-        // Check if token is revoked
-        if (tokenRecord.is_revoked) {
-            throw new UnauthorizedError('Refresh token has been revoked');
-        }
-
-        // Check if token is expired
-        if (new Date() > tokenRecord.expires_at) {
-            throw new UnauthorizedError('Refresh token has expired');
-        }
-
-        // Check if token is blacklisted
-        const isBlacklisted = await TokenRepository.isBlacklisted(refresh_token);
-        if (isBlacklisted) {
-            throw new UnauthorizedError('Refresh token is blacklisted');
-        }
-
-        // Generate new access token
+        // Step 3: Generate new access token
         const newAccessToken = signAccessToken(
             {
                 id: decoded.id,

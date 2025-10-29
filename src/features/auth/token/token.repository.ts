@@ -85,6 +85,43 @@ export class TokenRepository {
     );
   }
 
+  // Get refresh token record with validation details (optimized with single query)
+  static async validateRefreshToken(token: string): Promise<{
+    valid: boolean;
+    reason?: string;
+    record?: any;
+  }> {
+    const now = new Date();
+
+    const [refreshToken, blacklisted] = await Promise.all([
+      prisma.refresh_tokens.findUnique({
+        where: { token },
+      }),
+      prisma.blacklisted_tokens.findUnique({
+        where: { token },
+      }),
+    ]);
+
+    // Check conditions in order of likelihood
+    if (!refreshToken) {
+      return { valid: false, reason: 'Refresh token not found in database' };
+    }
+
+    if (refreshToken.is_revoked) {
+      return { valid: false, reason: 'Refresh token has been revoked' };
+    }
+
+    if (refreshToken.expires_at < now) {
+      return { valid: false, reason: 'Refresh token has expired' };
+    }
+
+    if (blacklisted) {
+      return { valid: false, reason: 'Refresh token is blacklisted' };
+    }
+
+    return { valid: true, record: refreshToken };
+  }
+
   // Get refresh token record from database
   static async findRefreshTokenRecord(token: string) {
     return prisma.refresh_tokens.findUnique({
