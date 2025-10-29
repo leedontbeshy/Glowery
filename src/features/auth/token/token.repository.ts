@@ -85,6 +85,13 @@ export class TokenRepository {
     );
   }
 
+  // Get refresh token record from database
+  static async findRefreshTokenRecord(token: string) {
+    return prisma.refresh_tokens.findUnique({
+      where: { token },
+    });
+  }
+
 
   //Blacklisted_token
   static async isBlacklisted(token: string): Promise<boolean> {

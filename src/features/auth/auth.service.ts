@@ -88,7 +88,7 @@ export class AuthService {
         await TokenRepository.addToBlackList(accesToken,refreshToken, user_id);
     };
 
-    static async forgotPassword(email: string): Promise<any> {
+    static async forgotPassword(email: string) {
         const user = await UserRepository.findUserByEmail(email);
         if (!user) {
             return {
@@ -123,25 +123,39 @@ export class AuthService {
     }
 
     static async refreshAccessToken(data: RefreshTokenDTO): Promise<{ accessToken: string }> {
-        const { refreshToken } = data;
+        const { refresh_token } = data;
 
+        // Verify token signature and expiration
         let decoded;
         try {
-            decoded = verifyRefreshToken(refreshToken);
+            decoded = verifyRefreshToken(refresh_token);
         } catch {
-            throw new UnauthorizedError('Invalid or expired refresh token');
+            throw new UnauthorizedError('Invalid or expired refresh token (signature verification failed)');
         }
 
-        const isValidRefreshToken = await TokenRepository.findValidRefreshToken(refreshToken);
-        if (!isValidRefreshToken) {
-            throw new UnauthorizedError('Invalid or expired refresh token');
+        // Check if token exists in database
+        const tokenRecord = await TokenRepository.findRefreshTokenRecord(refresh_token);
+        if (!tokenRecord) {
+            throw new UnauthorizedError('Refresh token not found in database');
         }
 
-        const isBlacklisted = await TokenRepository.isBlacklisted(refreshToken);
-        if (isBlacklisted) {
+        // Check if token is revoked
+        if (tokenRecord.is_revoked) {
             throw new UnauthorizedError('Refresh token has been revoked');
         }
 
+        // Check if token is expired
+        if (new Date() > tokenRecord.expires_at) {
+            throw new UnauthorizedError('Refresh token has expired');
+        }
+
+        // Check if token is blacklisted
+        const isBlacklisted = await TokenRepository.isBlacklisted(refresh_token);
+        if (isBlacklisted) {
+            throw new UnauthorizedError('Refresh token is blacklisted');
+        }
+
+        // Generate new access token
         const newAccessToken = signAccessToken(
             {
                 id: decoded.id,

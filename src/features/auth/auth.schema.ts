@@ -70,6 +70,6 @@ export const verifyEmailSchema = z
 
 export const refreshTokenSchema = z
     .object({
-        refreshToken: z.string().trim().min(1, 'Refresh token is required'),
+        refresh_token: z.string().trim().min(1, 'Refresh token is required'),
     })
     .strict();
