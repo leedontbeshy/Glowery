@@ -20,8 +20,6 @@ export class UserService {
         userId: number,
         userData: UpdateUserDTO,
     ): Promise<UserBasic | null> {
-        // Data already validated by middleware
-        // Only business logic validation here
         
         const user = await UserRepository.updateUser(userId, userData);
         
@@ -34,15 +32,12 @@ export class UserService {
     }
 
     static async updatePassword(userId: number, passwordData: ChangePasswordDTO) {
-        // Data already validated by middleware
         const { old_password, new_password } = passwordData;
 
         const oldHashedPassword = await UserRepository.getPasswordById(userId);
         if (!oldHashedPassword) {
             throw new NotFoundError('User not found');
         }
-
-        // Business logic validation: Verify old password
         const isMatch = await verifyPassword(old_password, oldHashedPassword);
         if (!isMatch) {
             throw new BadRequestError('Old password is incorrect');
