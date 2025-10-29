@@ -38,7 +38,7 @@ export class AuthService {
         // Find user
         const user = await UserRepository.findUserByEmail(email);
         if (!user) {
-            throw new NotFoundError('Email does not exsit');
+            throw new NotFoundError('Email does not exist');
         }
 
         // Verify password
