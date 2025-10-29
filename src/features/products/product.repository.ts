@@ -8,6 +8,7 @@ import { CreateProductDTO } from "./product.dto";
 import { Product } from "./product.model";
 
 export class ProductRepository {
+
   static async getAllProduct(
     limit: number = 20,
     offset: number = 0
@@ -66,9 +67,9 @@ export class ProductRepository {
         sold_count: true,
       },
     });
-    
+
     if (!product) return null;
-    
+
     return {
       name: product.name,
       slug: product.slug,
@@ -83,7 +84,7 @@ export class ProductRepository {
     };
   }
 
-    static async createProduct(data: CreateProductDTO): Promise<Product> {
+  static async createProduct(data: CreateProductDTO): Promise<Product> {
     const product = await prisma.products.create({
       data: {
         name: data.name,
@@ -106,6 +107,7 @@ export class ProductRepository {
       where: { slug },
     });
     return count > 0;
-  }
-  }
+  };
+
+}
 

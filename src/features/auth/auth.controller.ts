@@ -59,8 +59,8 @@ export const AuthController = {
 
     async resetPassword(req: Request, res: Response) {
         try {
-            const { token, newPassword } = req.body;
-            await AuthService.resetPassword(token, newPassword);
+            const { token, new_password } = req.body;
+            await AuthService.resetPassword(token, new_password);
             return res.status(200).json({
                 success: true,
                 message: "Change password successfully"

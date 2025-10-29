@@ -6,6 +6,7 @@ import helmet from 'helmet';
 
 import routes from './features'; // index.ts
 import { swaggerOptions } from './config/swagger.config';
+import { errorHandler } from './common/middlewares/error.middleware';
 
 const app = express();
 
@@ -31,5 +32,5 @@ app.use('/', () => {
 })
 
 
-
+app.use(errorHandler);
 export default app;
