@@ -1,47 +1,95 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from 'express';
 
-import { handleControllerError } from "@/common/utils/controllerHelper";
-import { sendError, sendSuccess } from "@/common/utils/response";
+import { ProductService } from './product.service';
+import { CreateProductDTO, UpdateProductDTO, GetProductsQueryDTO } from './product.dto';
 
-import { ProductService } from "./product.service";
+export class ProductController {
+  // GET /api/v1/product - Get all products with pagination and filters
+  static async getAllProducts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query as unknown as GetProductsQueryDTO;
+      const result = await ProductService.getAllProducts(query);
 
-
-export const ProductController = {
-    async getAllProduct(req: Request, res: Response) {
-        try {
-            const result = await ProductService.getAllProduct(req.query);
-            return res.status(200).json({
-                message: "Fetched products successfully",
-                result
-            })
-        } catch (error) {
-            return handleControllerError(error, res, 'getAllProducts');
-        }
-    },
-
-    async getProductById(req: Request, res: Response){
-        try {
-            const idParam = req.params.id;
-            const id = Number(idParam);
-
-            if(!idParam || isNaN(id)){
-                return sendError(res, null, "Invalid or missing product ID", 400)
-            }
-
-            const result = await ProductService.getProductDetailById(id);
-            return sendSuccess(res, result, "Product fetched successfully")
-        } catch (error) {   
-            return handleControllerError(error, res, 'getProductDetailById')
-        }
-    },
-
-    async createProduct(req: Request, res: Response) {
-        try {
-            const productData = req.body;
-            const result = await ProductService.createProduct(productData);
-            return sendSuccess(res, result, "Product created successfully", 201);
-        } catch (error) {
-            return handleControllerError(error, res, 'createProduct');
-        }
+      res.status(200).json({
+        success: true,
+        message: 'Products retrieved successfully',
+        data: result,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
+
+  // GET /api/v1/product/:id - Get product by ID
+  static async getProductById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await ProductService.getProductById(productId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Product retrieved successfully',
+        data: product,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // POST /api/v1/product - Create new product (seller or admin)
+  static async createProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data: CreateProductDTO = req.body;
+      const userId = req.user!.id; // From auth middleware
+
+      const result = await ProductService.createProduct(data, userId);
+
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        data: result.product,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PUT /api/v1/product/:id - Update product
+  static async updateProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const productId = parseInt(req.params.id);
+      const data: UpdateProductDTO = req.body;
+      const userId = req.user!.id;
+      const userRole = req.user!.role;
+
+      const result = await ProductService.updateProduct(productId, data, userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+        data: result.product,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // DELETE /api/v1/product/:id - Delete product (soft delete)
+  static async deleteProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const productId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      const userRole = req.user!.role;
+
+      const result = await ProductService.deleteProduct(productId, userId, userRole);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+
