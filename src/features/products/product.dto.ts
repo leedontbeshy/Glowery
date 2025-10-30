@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-import { productSchema, createProductSchema } from "./product.schema";
+import {
+  createProductSchema,
+  updateProductSchema,
+  getProductsQuerySchema
+} from "./product.schema";
 
-export type ProductDTO = z.infer<typeof productSchema>;
-export type CreateProductDTO = z.infer<typeof createProductSchema>;
+export type CreateProductDTO = z.infer<typeof createProductSchema>['body'];
+export type UpdateProductDTO = z.infer<typeof updateProductSchema>['body'];
+export type GetProductsQueryDTO = z.infer<typeof getProductsQuerySchema>['query'];
+

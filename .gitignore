@@ -51,3 +51,5 @@ docs/error-handling
 
 .claude
 /src/generated/prisma
+/PRODUCT_IMPLEMENTATION_SUMMARY.md
+/docs/api-docs/product-features.md
