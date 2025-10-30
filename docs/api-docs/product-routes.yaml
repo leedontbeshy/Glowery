@@ -1,0 +1,497 @@
+openapi: 3.0.0
+info:
+  title: Product API
+  version: 1.0.0
+  description: Complete API documentation for Product routes
+
+paths:
+  /api/v1/product:
+    get:
+      summary: Get all products with pagination and filters
+      description: Retrieve a paginated list of all products with optional filtering by status, category, and sorting options. This endpoint is public and does not require authentication.
+      tags:
+        - Products
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Items per page (maximum 100)
+          example: 20
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, inactive, out_of_stock]
+          description: Filter by product status
+          example: active
+        - in: query
+          name: category_id
+          schema:
+            type: integer
+            minimum: 1
+          description: Filter by category ID
+          example: 5
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [price_asc, price_desc, newest, popular, best_selling]
+          description: Sort products by specified criteria
+          example: price_asc
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Products retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      products:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Bad request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create new product (seller or admin only)
+      description: Create a new product in the system. Requires authentication and seller or admin role.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - slug
+                - price
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: Product name
+                  example: Wireless Headphones
+                slug:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  pattern: '^[a-z0-9-]+$'
+                  description: URL-friendly identifier (lowercase, numbers, hyphens only)
+                  example: wireless-headphones
+                description:
+                  type: string
+                  description: Product description
+                  example: High-quality wireless headphones with noise cancellation
+                price:
+                  type: number
+                  minimum: 0
+                  description: Product price (must be positive)
+                  example: 1500000
+                discount_price:
+                  type: number
+                  minimum: 0
+                  description: Discounted price (optional)
+                  example: 1200000
+                quantity:
+                  type: integer
+                  minimum: 0
+                  description: Stock quantity
+                  example: 100
+                sku:
+                  type: string
+                  maxLength: 100
+                  description: Stock Keeping Unit
+                  example: WH-1000XM4
+                category_id:
+                  type: integer
+                  minimum: 1
+                  description: Category ID
+                  example: 5
+                status:
+                  type: string
+                  enum: [active, inactive, out_of_stock]
+                  default: active
+                  description: Product status
+                  example: active
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product created successfully
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '400':
+          description: Bad request - Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/product/{id}:
+    get:
+      summary: Get product by ID
+      description: Retrieve detailed information of a specific product by its ID. This endpoint is public and does not require authentication.
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Product ID
+          example: 1
+      responses:
+        '200':
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update product (seller owner or admin only)
+      description: Update an existing product. Only the product owner (seller) or admin can update the product.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Product ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  description: Product name
+                  example: Premium Wireless Headphones
+                slug:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  pattern: '^[a-z0-9-]+$'
+                  description: URL-friendly identifier
+                  example: premium-wireless-headphones
+                description:
+                  type: string
+                  description: Product description
+                  example: Updated description with new features
+                price:
+                  type: number
+                  minimum: 0
+                  description: Product price
+                  example: 1600000
+                discount_price:
+                  type: number
+                  minimum: 0
+                  description: Discounted price
+                  example: 1300000
+                quantity:
+                  type: integer
+                  minimum: 0
+                  description: Stock quantity
+                  example: 75
+                sku:
+                  type: string
+                  maxLength: 100
+                  description: Stock Keeping Unit
+                  example: WH-1000XM4-BLK
+                category_id:
+                  type: integer
+                  minimum: 1
+                  description: Category ID
+                  example: 5
+                status:
+                  type: string
+                  enum: [active, inactive, out_of_stock]
+                  description: Product status
+                  example: active
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product updated successfully
+                  data:
+                    $ref: '#/components/schemas/Product'
+        '400':
+          description: Bad request - Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Not the product owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete product (seller owner or admin only)
+      description: Soft delete a product. Only the product owner (seller) or admin can delete the product.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Product ID
+          example: 1
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Product deleted successfully
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Not the product owner or admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login endpoint
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique product identifier
+          example: 1
+        name:
+          type: string
+          description: Product name
+          example: Wireless Headphones
+        slug:
+          type: string
+          description: URL-friendly product identifier
+          example: wireless-headphones
+        description:
+          type: string
+          nullable: true
+          description: Product description
+          example: High-quality wireless headphones with noise cancellation
+        price:
+          type: number
+          description: Product price
+          example: 1500000
+        discount_price:
+          type: number
+          nullable: true
+          description: Discounted price
+          example: 1200000
+        quantity:
+          type: integer
+          description: Available stock quantity
+          example: 100
+        sku:
+          type: string
+          nullable: true
+          description: Stock Keeping Unit
+          example: WH-1000XM4
+        category_id:
+          type: integer
+          nullable: true
+          description: Category ID
+          example: 5
+        seller_id:
+          type: integer
+          description: Seller ID
+          example: 42
+        status:
+          type: string
+          enum: [active, inactive, out_of_stock]
+          description: Product status
+          example: active
+        view_count:
+          type: integer
+          description: Number of views
+          example: 120
+        sold_count:
+          type: integer
+          description: Number of units sold
+          example: 25
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2025-10-28T10:30:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2025-10-28T10:30:00.000Z"
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deletion timestamp (soft delete)
+          example: null
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Items per page
+          example: 20
+        total:
+          type: integer
+          description: Total number of products
+          example: 150
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 8
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+          example: An error occurred
